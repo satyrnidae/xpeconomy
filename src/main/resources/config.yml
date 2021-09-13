@@ -1,0 +1,28 @@
+# Database Settings: Set this to connect to a MySQL database for account storage.
+# If Enabled is set to false, then file storage will be used instead.
+mysql:
+  # Whether the MySQL server backend should be enabled.
+  enabled: false
+  # The MySQL server hostname.
+  hostname: localhost
+  # The MySQL server port.
+  port: 3306
+  # The name of the database to use.
+  database: experience_eco
+  # The MySQL user ID.
+  userID: root
+  # The MySQL user password.
+  password: root
+  # Options for the MySQL connection. Represented as key-value pairs.
+  flags:
+    - allowReconnect: false
+      useSSL: false
+  # Optional prefix for any created table's names.
+  # Useful if you are only using a single database for multiple plugins.
+  tablePrefix: "xpeco_"
+# The initial account balance for new player accounts.
+startingValue: 0
+# The locale to use while translating chat messages.
+# Defaults to en_US.
+locale: "en_US"
+logLevel: "INFO"

@@ -1,0 +1,8 @@
+currency.name=Experience
+currency.name.plural=Experience
+economy.account_not_found=Player does not have an account on this server.
+economy.insufficient_funds=Insufficient funds available.
+economy.negative_deposit=Cannot deposit a negative amount into an account.
+economy.negative_withdrawal=Cannot withdraw a negative amount from an account.
+economy.successful_deposit=
+economy.successful_withdrawal=

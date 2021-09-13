@@ -1,0 +1,10 @@
+name: ExperienceEconomy
+version: ${project.version}
+main: dev.satyrn.xpeconomy.ExperienceEconomyPlugin
+api-version: 1.17
+prefix: ExperienceEconomy
+softdepend: [ Vault ]
+loadBefore: [ Essentials ]
+authors: [ saturniidae ]
+description: No more fiat currencies! Tie your economy directly to your XP levels!
+website: https://satyrn.dev/

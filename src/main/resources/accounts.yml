@@ -1,0 +1,4 @@
+# Example accounts.yml file. Will be auto-generated.
+accounts:
+  - uuid: "cd674324-c9d9-33de-9941-c025f40dde11",
+    balance: 1057.0
