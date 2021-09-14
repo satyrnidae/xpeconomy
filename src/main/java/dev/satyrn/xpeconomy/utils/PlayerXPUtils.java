@@ -69,25 +69,25 @@ public final class PlayerXPUtils {
         // For levels <= 16, use "sqrt(x + 9) - 3".
         if (total.compareTo(getXPForLevel(FUNC_1_MAX)) < 1) {
             levelProgress = total                                                                                       // x
-                    .add(new BigDecimal(9))                                                                             // x + 9
+                    .add(BigDecimal.valueOf(9))                                                                         // x + 9
                     .sqrt(MATH_CONTEXT)                                                                                 // sqrt(x + 9)
-                    .subtract(new BigDecimal(3));                                                                       // sqrt(x + 9) - 3
+                    .subtract(BigDecimal.valueOf(3));                                                                   // sqrt(x + 9) - 3
         }
         // For levels > 16 and levels <= 31, use "81/10 + sqrt((2/5) × (x - 7839/40))".
         else if (total.compareTo(getXPForLevel(FUNC_2_MAX)) < 1) {
             levelProgress = total                                                                                       // x
-                    .subtract(new BigDecimal(7839).divide(new BigDecimal(40), MATH_CONTEXT))                            // x - 7839/40
-                    .multiply(new BigDecimal(2).divide(new BigDecimal(5), MATH_CONTEXT))                                // (x - 7839/40) × 2/5
+                    .subtract(BigDecimal.valueOf(7839).divide(BigDecimal.valueOf(40), MATH_CONTEXT))                    // x - 7839/40
+                    .multiply(BigDecimal.valueOf(2).divide(BigDecimal.valueOf(5), MATH_CONTEXT))                        // (x - 7839/40) × 2/5
                     .sqrt(MATH_CONTEXT)                                                                                 // sqrt((x - 7839/40) × 2/5)
-                    .add(new BigDecimal(81).divide(new BigDecimal(10), MATH_CONTEXT));                                  // sqrt((x - 7839/40) x 2/5) + 81/10
+                    .add(BigDecimal.valueOf(81).divide(BigDecimal.valueOf(10), MATH_CONTEXT));                          // sqrt((x - 7839/40) x 2/5) + 81/10
         }
         // For levels > 31, use "325/18 + sqrt((2/9) × (x - 54215/72))".
         else {
-            levelProgress = total                                                                                                   // x
-                    .subtract(new BigDecimal(54215).divide(new BigDecimal(72), MATH_CONTEXT))                           // x - 54215/72
-                    .multiply(new BigDecimal(2).divide(new BigDecimal(9), MATH_CONTEXT))                                // (x - 54215/72) × 2/9
+            levelProgress = total                                                                                       // x
+                    .subtract(BigDecimal.valueOf(54215).divide(BigDecimal.valueOf(72), MATH_CONTEXT))                   // x - 54215/72
+                    .multiply(BigDecimal.valueOf(2).divide(BigDecimal.valueOf(9), MATH_CONTEXT))                        // (x - 54215/72) × 2/9
                     .sqrt(MATH_CONTEXT)                                                                                 // sqrt((x - 54215/72) × 2/9)
-                    .add(new BigDecimal(325).divide(new BigDecimal(18), MATH_CONTEXT));                                 // sqrt((x - 54215/72) × 2/9) + 325/18
+                    .add(BigDecimal.valueOf(325).divide(BigDecimal.valueOf(18), MATH_CONTEXT));                         // sqrt((x - 54215/72) × 2/9) + 325/18
         }
         final int levels = levelProgress.intValue();
         final float progress = levelProgress.remainder(BigDecimal.ONE).floatValue();
@@ -114,31 +114,32 @@ public final class PlayerXPUtils {
      */
     public static BigDecimal getXPForLevel(final int level) {
         BigDecimal totalXPForLevel;
-        final BigDecimal decimalLevel = new BigDecimal(level);
+        final BigDecimal decimalLevel = BigDecimal.valueOf(level);
 
         // For levels <= 16, use "x^2 + 6x".
         if (level <= FUNC_1_MAX) {
             // x^2 + 6x
             totalXPForLevel = decimalLevel                                                                              // x
                     .pow(2)                                                                                             // x^2
-                    .add(new BigDecimal(6).multiply(decimalLevel));                                                     // x^2 + 6x
+                    .add(BigDecimal.valueOf(6).multiply(decimalLevel));                                                 // x^2 + 6x
         }
         // For levels > 16 and levels <= 31, use "(5/2)x^2 - (81/2)x + 360".
         else if (level <= FUNC_2_MAX) {
-            totalXPForLevel = new BigDecimal(5)                                                                         // 5
-                    .divide(new BigDecimal(2), MATH_CONTEXT)                                                            // 5/2
+            totalXPForLevel = BigDecimal.valueOf(5)                                                                     // 5
+                    .divide(BigDecimal.valueOf(2), MATH_CONTEXT)                                                        // 5/2
                     .multiply(decimalLevel.pow(2))                                                                      // (5/2)x^2
-                    .subtract(new BigDecimal(81).divide(new BigDecimal(2), MATH_CONTEXT)                                // (5/2)x^2 - (81/2...
+                    .subtract(BigDecimal.valueOf(81).divide(BigDecimal.valueOf(2), MATH_CONTEXT)                        // (5/2)x^2 - (81/2...
                             .multiply(decimalLevel))                                                                    // (5/2)x^2 - (81/2)x
-                    .add(new BigDecimal(360));                                                                          // (5/2)x^2 - (18/2)x + 360
+                    .add(BigDecimal.valueOf(360));                                                                      // (5/2)x^2 - (18/2)x + 360
         }
         // For levels > 31, use "(9/2)x^2 - (352/2)x + 2220".
         else {
-            totalXPForLevel = new BigDecimal(9)                                                                         // 9
-                    .divide(new BigDecimal(2), MATH_CONTEXT)                                                            // 9/2
+            totalXPForLevel = BigDecimal.valueOf(9)                                                                     // 9
+                    .divide(BigDecimal.valueOf(2), MATH_CONTEXT)                                                        // 9/2
                     .multiply(decimalLevel.pow(2))                                                                      // (9/2)x^2
-                    .subtract(new BigDecimal(325).divide(new BigDecimal(2), MATH_CONTEXT).multiply(decimalLevel))       // (9/2)x^2 - (325/2)x
-                    .add(new BigDecimal(2220));                                                                         // (9/2)x^2 - (325/2)x + 2220;
+                    .subtract(BigDecimal.valueOf(325).divide(BigDecimal.valueOf(2), MATH_CONTEXT)
+                            .multiply(decimalLevel))                                                                    // (9/2)x^2 - (325/2)x
+                    .add(BigDecimal.valueOf(2220));                                                                     // (9/2)x^2 - (325/2)x + 2220;
         }
         return totalXPForLevel.setScale(0, RoundingMode.HALF_UP);
     }
@@ -153,26 +154,26 @@ public final class PlayerXPUtils {
      */
     public static BigDecimal getCurrentLevelProgress(final int level, final float percent) {
         BigDecimal toNextLevel;
-        final BigDecimal decimalLevel = new BigDecimal(level);
+        final BigDecimal decimalLevel = BigDecimal.valueOf(level);
 
         // For levels < 16, use "2x + 7"
         if (level < FUNC_1_MAX) {
             toNextLevel = decimalLevel                                                                                  // x
-                    .multiply(new BigDecimal(2))                                                                        // 2x
-                    .add(new BigDecimal(7));                                                                            // 2x + 7
+                    .multiply(BigDecimal.valueOf(2))                                                                    // 2x
+                    .add(BigDecimal.valueOf(7));                                                                        // 2x + 7
         }
         // For levels >= 16 and levels < 31, use "5x - 38"
         else if (level < FUNC_2_MAX) {
             toNextLevel = decimalLevel                                                                                  // x
-                    .multiply(new BigDecimal(5))                                                                        // 5x
-                    .subtract(new BigDecimal(38));                                                                      // 5x - 38
+                    .multiply(BigDecimal.valueOf(5))                                                                    // 5x
+                    .subtract(BigDecimal.valueOf(38));                                                                  // 5x - 38
         }
         // For levels >= 31, use "9x - 158"
         else {
             toNextLevel = decimalLevel                                                                                  // x
-                    .multiply(new BigDecimal(9))                                                                        // 9x
-                    .subtract(new BigDecimal(158));                                                                     // 9x - 158
+                    .multiply(BigDecimal.valueOf(9))                                                                    // 9x
+                    .subtract(BigDecimal.valueOf(158));                                                                 // 9x - 158
         }
-        return toNextLevel.multiply(new BigDecimal(percent)).setScale(0, RoundingMode.HALF_UP);
+        return toNextLevel.multiply(BigDecimal.valueOf(percent)).setScale(0, RoundingMode.HALF_UP);
     }
 }
