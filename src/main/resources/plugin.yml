@@ -2,9 +2,113 @@ name: ExperienceEconomy
 version: ${project.version}
 main: dev.satyrn.xpeconomy.ExperienceEconomyPlugin
 api-version: 1.17
-prefix: ExperienceEconomy
+prefix: xpeconomy
 softdepend: [ Vault ]
 loadBefore: [ Essentials ]
 authors: [ saturniidae ]
 description: No more fiat currencies! Tie your economy directly to your XP levels!
 website: https://satyrn.dev/
+commands:
+  balance:
+    description: Displays the user's current balance.
+    usage: /<command> [player]
+    aliases:
+      - bal
+  experience:
+    description: Displays the user's current experience levels, progress, and points.
+    usage: /<command> [player]
+    aliases:
+      - exp
+      - xp
+  pay:
+    description: Pays an amount from the user's balance to another.
+    usage: /pay player amount
+  setbalance:
+    description: Sets a player's balance.
+    usage: /<command> [player]
+    aliases:
+      - setbal
+  xpeconomy:
+    description: Handles all Experience Economy tasks. See /xpeconomy help for more information.
+    usage: /<command> {about|balance|experience|give|help|pay|setbalance|sync|take} [...args]
+    aliases:
+      - xpeco
+      - xpe
+permissions:
+  xpeconomy.*:
+    description: Grants a user all privileges.
+    default: op
+    children:
+      xpeconomy.user: true
+      xpeconomy.admin: true
+  xpeconomy.admin:
+    description: Grants a user all admin rights.
+    default: op
+    children:
+      xpeconomy.balance.others: true
+      xpeconomy.balance.set: true
+      xpeconomy.balance.set.others: true
+      xpeconomy.experience.others: true
+      xpeconomy.give: true
+      xpeconomy.give.levels: true
+      xpeconomy.sync: true
+      xpeconomy.sync.others: true
+      xpeconomy.sync.all: true
+      xpeconomy.take: true
+      xpeconomy.take.grouplower: true
+  xpeconomy.balance:
+    default: true
+    description: Allows a user to query their own account balance.
+  xpeconomy.balance.exempt:
+    default: false
+    description: Prevents a user's balance from being queried by another user.
+  xpeconomy.balance.exempt.bypass:
+    default: false
+    description: Allows a user to bypass the xpeconomy.balance.exempt permission.
+  xpeconomy.balance.others:
+    default: op
+    description: Allows a user to query another user's balance.
+  xpeconomy.experience:
+    default: true
+    description: Allows a user to query their own experience point total.
+  xpeconomy.experience.others:
+    default: op
+    description: Allows a user to query another user's experience point total.
+  xpeconomy.experience.exempt:
+    default: false
+    description: Prevents a user's experience point total from being queried by another user.
+  xpeconomy.experience.exempt.bypass:
+    default: false
+    description: Allows a user to bypass the xpeconomy.experience.exempt permission.
+  xpeconomy.give:
+    default: op
+    description: Allows the user to give another player a specific amount of experience points.
+  xpeconomy.give.levels:
+    default: op
+    description: Allows the user to give another player a specific number of experience levels.
+  xpeconomy.pay:
+    default: true
+    description: Allows a user to transfer a portion of their total balance to other users.
+  xpeconomy.take:
+    default: op
+    description: Allows a user to take money from other users.
+  xpeconomy.take.group.*:
+    default: false
+    description: Allows a user to take money from users within a specific group.
+  xpeconomy.take.grouprank:
+    default: op
+    description: Allows a user to take money from users within any group with a lower rank than themselves.
+  xpeconomy.take.exempt:
+    default: false
+    description: Prevents the use of the take command on a user.
+  xpeconomy.take.exempt.bypass:
+    default: false
+    description: Allows a user to bypass the xpeconomy.take.exempt permission.
+  xpeconomy.user:
+    description: Grants a user all non-admin privileges.
+    default: true
+    children:
+      xpeconomy.balance: true
+      xpeconomy.experience: true
+      xpeconomy.pay: true
+
