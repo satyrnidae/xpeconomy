@@ -25,4 +25,6 @@ startingValue: 0
 # The locale to use while translating chat messages.
 # Defaults to en_US.
 locale: "en_US"
-logLevel: "INFO"
+# The economy method to use.
+# Defaults to "points". Valid values are "points", "levels" (case insensitive)
+economyMethod: "points"

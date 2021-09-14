@@ -56,14 +56,14 @@ public final class YamlAccountManager extends AccountManagerBase {
 
         final List<Map<?, ?>> accountsSection = this.ymlConfigFile.getMapList("accounts");
         for (final Map<?, ?> map : accountsSection) {
-            final PlayerAccount account = new PlayerAccount();
+            final PlayerAccount account = new PlayerAccount(this.economyMethod);
             try {
                 for (final Map.Entry<?, ?> savedAccount : map.entrySet()) {
                     if (savedAccount.getKey().toString().equals("uuid")) {
                         account.setUUID(UUID.fromString(savedAccount.getValue().toString()));
                     } else if (savedAccount.getKey().toString().equals("balance")) {
                         final double balance = Double.parseDouble(savedAccount.getValue().toString());
-                        account.setBalance(new BigDecimal(balance));
+                        account.setBalanceRaw(BigDecimal.valueOf(balance), false);
                     }
                 }
                 if (account.getUUID() == null) {
@@ -96,7 +96,7 @@ public final class YamlAccountManager extends AccountManagerBase {
         for (final PlayerAccount account : this.accounts) {
             final Map<String, String> map = new HashMap<>();
             map.put("uuid", account.getUUID().toString());
-            map.put("balance", Double.toString(account.getBalance().doubleValue()));
+            map.put("balance", Double.toString(account.getBalanceRaw().doubleValue()));
             mapList.add(map);
         }
 

@@ -21,6 +21,7 @@ public final class MySQLAccountManager extends AccountManagerBase {
      * The connection manager.
      */
     private final transient ConnectionManager connectionManager;
+    private final transient ExperienceEconomyConfiguration configuration;
 
     /**
      * Creates a new account manager with a MySQL backend.
@@ -34,6 +35,7 @@ public final class MySQLAccountManager extends AccountManagerBase {
         super(configuration);
         this.plugin = plugin;
         this.connectionManager = connectionManager;
+        this.configuration = configuration;
     }
 
     /**
@@ -54,7 +56,8 @@ public final class MySQLAccountManager extends AccountManagerBase {
                 while (results.next()) {
                     final String uuid = results.getString("uuid");
                     final BigDecimal balance = results.getBigDecimal("balance");
-                    final PlayerAccount account = new PlayerAccount(UUID.fromString(uuid)).setBalance(balance);
+                    final PlayerAccount account = new PlayerAccount(this.economyMethod, UUID.fromString(uuid))
+                            .setBalanceRaw(balance, false);
                     this.accounts.add(account);
                 }
             }
@@ -85,8 +88,8 @@ public final class MySQLAccountManager extends AccountManagerBase {
                 int i = 0;
                 for (final PlayerAccount account : this.accounts) {
                     statement.setString(1, account.getUUID().toString());
-                    statement.setBigDecimal(2, account.getBalance());
-                    statement.setBigDecimal(3, account.getBalance());
+                    statement.setBigDecimal(2, account.getBalanceRaw());
+                    statement.setBigDecimal(3, account.getBalanceRaw());
                     statement.addBatch();
                     if (i++ % 1000 == 0 || i == this.accounts.size()) {
                         statement.executeBatch();

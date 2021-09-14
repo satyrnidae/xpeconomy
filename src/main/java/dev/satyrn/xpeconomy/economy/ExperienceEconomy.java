@@ -3,7 +3,9 @@ package dev.satyrn.xpeconomy.economy;
 import com.google.common.collect.ImmutableList;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
 import dev.satyrn.xpeconomy.lang.I18n;
+import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -31,6 +33,7 @@ public final class ExperienceEconomy implements Economy {
      * The account manager instance.
      */
     private final transient AccountManager accountManager;
+    private final transient EconomyMethod economyMethod;
 
     /**
      * Creates a new instance of the Economy class.
@@ -38,9 +41,11 @@ public final class ExperienceEconomy implements Economy {
      * @param plugin         The parent plugin instance.
      * @param accountManager The account manager instance.
      */
-    public ExperienceEconomy(final PluginBase plugin, final AccountManager accountManager) {
+    public ExperienceEconomy(final PluginBase plugin, final AccountManager accountManager,
+                             final ExperienceEconomyConfiguration configuration) {
         this.plugin = plugin;
         this.accountManager = accountManager;
+        this.economyMethod = configuration.economyMethod.value();
     }
 
     /**
@@ -82,7 +87,7 @@ public final class ExperienceEconomy implements Economy {
      */
     @Override
     public int fractionalDigits() {
-        return 0;
+        return this.economyMethod.getScale();
     }
 
     /**
@@ -94,7 +99,11 @@ public final class ExperienceEconomy implements Economy {
      */
     @Override
     public String format(final double amount) {
-        final DecimalFormat formatter = new DecimalFormat("#,###");
+        StringBuilder pattern = new StringBuilder("#,###");
+        if (this.economyMethod == EconomyMethod.LEVELS) {
+            pattern.append(".00");
+        }
+        final DecimalFormat formatter = new DecimalFormat(pattern.toString());
         return formatter.format(amount);
     }
 
@@ -251,7 +260,7 @@ public final class ExperienceEconomy implements Economy {
     @Override
     public boolean has(final OfflinePlayer player, final double amount) {
         final Account account = this.accountManager.getAccount(player.getUniqueId());
-        return account.has(new BigDecimal(amount));
+        return account.has(BigDecimal.valueOf(amount));
     }
 
     /**
@@ -312,7 +321,7 @@ public final class ExperienceEconomy implements Economy {
             return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE,
                     I18n.tr("economy.negative_withdrawal"));
         }
-        final BigDecimal decimalAmount = new BigDecimal(amount);
+        final BigDecimal decimalAmount = BigDecimal.valueOf(amount);
         if (account.has(decimalAmount)) {
             account.withdraw(decimalAmount);
             return new EconomyResponse(amount, account.getBalance().doubleValue(), EconomyResponse.ResponseType.SUCCESS,
@@ -383,7 +392,7 @@ public final class ExperienceEconomy implements Economy {
             return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE,
                     I18n.tr("economy.negative_deposit"));
         }
-        account.deposit(new BigDecimal(amount));
+        account.deposit(BigDecimal.valueOf(amount));
         return new EconomyResponse(amount, account.getBalance().doubleValue(), EconomyResponse.ResponseType.SUCCESS,
                 I18n.tr("economy.successful_deposit"));
     }

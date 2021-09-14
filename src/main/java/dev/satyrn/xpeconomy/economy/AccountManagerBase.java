@@ -3,12 +3,12 @@ package dev.satyrn.xpeconomy.economy;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
+import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,9 +22,13 @@ public abstract class AccountManagerBase implements AccountManager {
      */
     protected final transient List<PlayerAccount> accounts = new ArrayList<>();
     /**
-     * The configuration manager.
+     * The economy method to use.
      */
-    protected final ExperienceEconomyConfiguration configuration;
+    protected final transient EconomyMethod economyMethod;
+    /**
+     * The starting balance of new accounts.
+     */
+    protected final transient double startingBalance;
 
     /**
      * Creates a new instance of an account manager.
@@ -32,7 +36,8 @@ public abstract class AccountManagerBase implements AccountManager {
      * @param configuration The configuration manager.
      */
     protected AccountManagerBase(final ExperienceEconomyConfiguration configuration) {
-        this.configuration = configuration;
+        this.economyMethod = configuration.economyMethod.value();
+        this.startingBalance = configuration.startingValue.value();
     }
 
     /**
@@ -55,15 +60,15 @@ public abstract class AccountManagerBase implements AccountManager {
     @Override
     public Account createAccount(final OfflinePlayer player) {
         if (player != null) {
-            final PlayerAccount account = new PlayerAccount(player.getUniqueId());
+            final PlayerAccount account = new PlayerAccount(this.economyMethod, player.getUniqueId());
             final Player onlinePlayer = player.getPlayer();
             if (onlinePlayer != null) {
                 BigDecimal playerBalance = PlayerXPUtils.getPlayerXPTotal(player.getUniqueId());
                 BigDecimal startingBalance = this.getStartingBalance();
                 if (playerBalance.compareTo(startingBalance) > 0) {
-                    account.setBalance(playerBalance);
+                    account.setBalanceRaw(playerBalance, false);
                 } else {
-                    account.setBalance(startingBalance, true);
+                    account.setBalanceRaw(startingBalance, true);
                 }
             }
 
@@ -94,6 +99,7 @@ public abstract class AccountManagerBase implements AccountManager {
      * @return The starting value for the account.
      */
     private BigDecimal getStartingBalance() {
-        return new BigDecimal(this.configuration.startingValue.value()).setScale(0, RoundingMode.HALF_UP);
+        return BigDecimal.valueOf(this.startingBalance)
+                .setScale(this.economyMethod.getScale(), this.economyMethod.getRoundingMode());
     }
 }

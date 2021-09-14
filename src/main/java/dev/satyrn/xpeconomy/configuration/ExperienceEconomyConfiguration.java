@@ -1,7 +1,10 @@
 package dev.satyrn.xpeconomy.configuration;
 
 import dev.satyrn.xpeconomy.api.configuration.*;
+import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import org.bukkit.plugin.PluginBase;
+
+import java.util.Locale;
 
 /**
  * Root configuration container for the Experience Economy mod.
@@ -14,11 +17,22 @@ public class ExperienceEconomyConfiguration extends ConfigurationContainer {
     /**
      * The initial account balance for new player accounts.
      */
-    public final IntegerNode startingValue = new IntegerNode(this, "startingValue");
+    public final DoubleNode startingValue = new DoubleNode(this, "startingValue");
     /**
      * The locale to use while translating chat messages.
      */
     public final StringNode locale = new StringNode(this, "locale");
+    public final EnumNode<EconomyMethod> economyMethod = new EnumNode<>(this, "economyMethod") {
+        @Override
+        public EconomyMethod parse(String value) throws IllegalArgumentException {
+            return EconomyMethod.valueOf(value.toUpperCase(Locale.ROOT));
+        }
+
+        @Override
+        public EconomyMethod getDefault() {
+            return EconomyMethod.POINTS;
+        }
+    };
 
     /**
      * Initializes a new root configuration container.

@@ -39,6 +39,6 @@ public class PlayerBalanceSynchronizationTask extends BukkitRunnable {
         final BigDecimal currentXPBalance = PlayerXPUtils.getTotalXPValue(level, progress);
         this.plugin.getLogger().log(Level.FINE,
                 String.format("[Tasks] Setting player account balance to \"%s\"", currentXPBalance.doubleValue()));
-        this.account.setBalance(currentXPBalance);
+        this.account.setBalanceRaw(currentXPBalance, false);
     }
 }

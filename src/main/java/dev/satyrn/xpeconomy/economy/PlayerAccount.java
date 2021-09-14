@@ -1,7 +1,9 @@
 package dev.satyrn.xpeconomy.economy;
 
 import dev.satyrn.xpeconomy.api.economy.Account;
+import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
+import org.javatuples.Pair;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,6 +13,10 @@ import java.util.UUID;
  * Represents a player account. Handles all XP operations.
  */
 public final class PlayerAccount implements Account {
+    /**
+     * The economy method to use.
+     */
+    private final transient EconomyMethod economyMethod;
     /**
      * The account balance.
      */
@@ -23,15 +29,18 @@ public final class PlayerAccount implements Account {
     /**
      * Creates a new account with no data.
      */
-    PlayerAccount() {
+    PlayerAccount(final EconomyMethod economyMethod) {
+        this.economyMethod = economyMethod;
     }
 
     /**
      * Creates an account with a name and UUID.
      *
+     * @param economyMethod The economy method for the account.
      * @param uuid The UUID on the account.
      */
-    public PlayerAccount(final UUID uuid) {
+    public PlayerAccount(final EconomyMethod economyMethod, final UUID uuid) {
+        this(economyMethod);
         this.uuid = uuid;
     }
 
@@ -64,6 +73,19 @@ public final class PlayerAccount implements Account {
      */
     @Override
     public BigDecimal getBalance() {
+        BigDecimal balance = this.balance;
+
+        if (this.economyMethod == EconomyMethod.LEVELS) {
+            final Pair<Integer, Float> progress = PlayerXPUtils.toLevelProgress(balance);
+            balance = BigDecimal.valueOf(progress.getValue0())
+                    .add(BigDecimal.valueOf(progress.getValue1()))
+                    .setScale(EconomyMethod.LEVELS.getScale(), EconomyMethod.LEVELS.getRoundingMode());
+        }
+
+        return balance;
+    }
+
+    public BigDecimal getBalanceRaw() {
         return this.balance;
     }
 
@@ -86,13 +108,30 @@ public final class PlayerAccount implements Account {
      * @return The account instance.
      */
     @Override
-    public PlayerAccount setBalance(final BigDecimal value, final boolean updateXPValue) {
+    public PlayerAccount setBalance(BigDecimal value, final boolean updateXPValue) {
+        if (this.economyMethod == EconomyMethod.LEVELS) {
+            final int level = value.intValue();
+            final float progress = value.remainder(BigDecimal.ONE)
+                    .setScale(EconomyMethod.LEVELS.getScale(), EconomyMethod.LEVELS.getRoundingMode()).floatValue();
+
+            value = PlayerXPUtils.getTotalXPValue(level, progress);
+        }
+
+        return this.setBalanceRaw(value, updateXPValue);
+    }
+
+    /**
+     * Sets the raw balance value.
+     * @param value The experience point balance.
+     * @return The account instance.
+     */
+    public PlayerAccount setBalanceRaw(final BigDecimal value, final boolean updateXPValue) {
         this.balance = value.setScale(0, RoundingMode.HALF_UP);
 
         if (updateXPValue) {
             PlayerXPUtils.setPlayerXPTotal(this.uuid, this.balance);
         }
-
+        this.balance = value;
         return this;
     }
 
@@ -103,7 +142,14 @@ public final class PlayerAccount implements Account {
      * @return Whether the account can withdraw a given amount.
      */
     @Override
-    public boolean has(final BigDecimal value) {
+    public boolean has(BigDecimal value) {
+        if (this.economyMethod == EconomyMethod.LEVELS) {
+            final int level = value.intValue();
+            final float progress = value.remainder(BigDecimal.ONE)
+                    .setScale(EconomyMethod.LEVELS.getScale(), EconomyMethod.LEVELS.getRoundingMode()).floatValue();
+            value = PlayerXPUtils.getTotalXPValue(level, progress);
+        }
+
         return this.balance.compareTo(value) > -1;
     }
 
@@ -115,11 +161,11 @@ public final class PlayerAccount implements Account {
      */
     @Override
     public boolean withdraw(final BigDecimal value) {
-        if (value.compareTo(BigDecimal.ZERO) < 0 || !this.has(value)) return false;
+        if (value.compareTo(BigDecimal.ZERO) < 0 || !this.has(value)) {
+            return false;
+        }
 
-        final BigDecimal newBalance = this.balance.subtract(value);
-
-        this.setBalance(newBalance.max(BigDecimal.ZERO), true);
+        this.addBalance(value.negate(), true);
 
         return true;
     }
@@ -131,12 +177,28 @@ public final class PlayerAccount implements Account {
      */
     @Override
     public boolean deposit(final BigDecimal value) {
-        if (value.compareTo(BigDecimal.ZERO) < 0) return false;
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            return false;
+        }
 
-        final BigDecimal newBalance = this.balance.add(value);
-
-        this.setBalance(newBalance, true);
+        this.addBalance(value, true);
 
         return true;
+    }
+
+    /**
+     * Adds to the total value of the account.
+     * @param value The value to add
+     * @param updateXPValue If true, also updates the player's XP value to match.
+     */
+    private void addBalance(BigDecimal value, boolean updateXPValue) {
+        if (this.economyMethod == EconomyMethod.LEVELS) {
+            final int level = value.intValue();
+            final float progress = value.remainder(BigDecimal.ONE).floatValue();
+
+            value = PlayerXPUtils.getTotalXPValue(level, progress);
+        }
+
+        this.setBalanceRaw(this.balance.add(value), updateXPValue);
     }
 }
