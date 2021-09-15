@@ -13,7 +13,7 @@
 
     <description>No more fiat currencies! Tie your economy directly to your XP points!</description>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>1.16</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <url>https://satyrn.dev/</url>
@@ -43,7 +43,15 @@
                             <relocations>
                                 <relocation>
                                     <pattern>org.javatuples</pattern>
-                                    <shadedPattern>org.shaded.javatuples</shadedPattern>
+                                    <shadedPattern>dev.satyrn.shaded.org.javatuples</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.github.classgraph</pattern>
+                                    <shadedPattern>dev.satyrn.shaded.io.github.classgraph</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>nonapi.io.github.classgraph</pattern>
+                                    <shadedPattern>dev.satyrn.shaded.nonapi.io.github.classgraph</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -111,6 +119,12 @@
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>
             <version>1.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.116</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
