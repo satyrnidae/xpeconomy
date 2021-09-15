@@ -89,13 +89,30 @@ permissions:
   xpeconomy.pay:
     default: true
     description: Allows a user to transfer a portion of their total balance to other users.
+  xpeconomy.sync:
+    default: op
+    description: Allows a user to sync their own experience and account balance, prioritizing experience.
+  xpeconomy.sync.others:
+    default: op
+    description: Allows a user to sync others' experience and account balance, prioritizing experience.
+  xpeconomy.sync.all:
+    default: op
+    description: Allows a user to force an account balance synchronization for all online players.
+    children:
+      xpeconomy.sync.others: true
+  xpeconomy.sync.exempt:
+    default: false
+    description: Prevents other users from syncing the user's experience and account balance.
+  xpeconomy.sync.exempt.bypass:
+    default: false
+    description: Allows a user to bypass the xpeconomy.sync.exempt permissions of another player.
   xpeconomy.take:
     default: op
     description: Allows a user to take money from other users.
   xpeconomy.take.group.*:
     default: false
     description: Allows a user to take money from users within a specific group.
-  xpeconomy.take.grouprank:
+  xpeconomy.take.ranked:
     default: op
     description: Allows a user to take money from users within any group with a lower rank than themselves.
   xpeconomy.take.exempt:
@@ -111,4 +128,3 @@ permissions:
       xpeconomy.balance: true
       xpeconomy.experience: true
       xpeconomy.pay: true
-
