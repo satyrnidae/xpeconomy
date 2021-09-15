@@ -11,15 +11,15 @@ public abstract class ConfigurationNode<E> {
     /**
      * The parent configuration container.
      */
-    protected final ConfigurationContainer parent;
+    protected final transient ConfigurationContainer parent;
     /**
      * The name of the node.
      */
-    protected final String name;
+    protected final transient String name;
     /**
      * The configuration file instance.
      */
-    protected Configuration config;
+    protected transient Configuration config;
 
     /**
      * Initializes a new Configuration node.
