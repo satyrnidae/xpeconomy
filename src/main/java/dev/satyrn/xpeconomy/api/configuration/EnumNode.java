@@ -34,6 +34,7 @@ public abstract class EnumNode<E extends Enum<E>> extends ConfigurationNode<E> {
 
     /**
      * Parses the enum value.
+     *
      * @param value The string value from the config file
      * @return The parsed enum value.
      * @throws IllegalArgumentException Thrown when the enum value parses.
@@ -42,6 +43,7 @@ public abstract class EnumNode<E extends Enum<E>> extends ConfigurationNode<E> {
 
     /**
      * Gets the default enum value.
+     *
      * @return The default enum value.
      */
     protected abstract E getDefault();

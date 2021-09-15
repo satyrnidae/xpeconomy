@@ -8,7 +8,8 @@ import java.util.Map;
  */
 public final class MapListNode extends ConfigurationNode<List<Map<?,?>>> {
     /**
-     * Creates a new configuration node with a Map value.
+     * Creates a new configuration node with a Map list value.
+     *
      * @param parent The parent container.
      * @param name The node's name.
      */
@@ -17,8 +18,9 @@ public final class MapListNode extends ConfigurationNode<List<Map<?,?>>> {
     }
 
     /**
-     * Returns the entire configuration node as a Map.
-     * @return The entire configuration node as a Map.
+     * Returns the entire configuration node as a Map list.
+     *
+     * @return The entire configuration node as a Map list.
      */
     @Override
     public List<Map<?,?>> value() {

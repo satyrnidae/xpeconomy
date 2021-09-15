@@ -14,6 +14,9 @@ import java.util.UUID;
  * Performs XP conversion, calculation, and updating.
  */
 public final class PlayerXPUtils {
+    /**
+     * The math context to use during calculations.
+     */
     private static final MathContext MATH_CONTEXT = new MathContext(34, RoundingMode.HALF_UP);
     /**
      * The maximum level count at which the first function should be used.
