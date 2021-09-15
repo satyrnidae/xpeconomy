@@ -11,16 +11,14 @@ public interface AccountManager {
     /**
      * Loads player account data from storage.
      *
-     * @return Whether the load completed successfully.
      */
-    boolean load();
+    void load();
 
     /**
      * Saves player account data to storage.
      *
-     * @return Whether the save completed successfully.
      */
-    boolean save();
+    void save();
 
     /**
      * Checks if an account exists for a given player UUID.

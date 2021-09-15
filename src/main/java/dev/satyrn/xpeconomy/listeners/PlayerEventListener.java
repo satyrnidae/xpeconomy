@@ -7,7 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 
 import java.util.UUID;
 import java.util.logging.Level;
@@ -19,18 +19,18 @@ public final class PlayerEventListener implements Listener {
     /**
      * The account manager instance.
      */
-    private final AccountManager accountManager;
+    private final transient AccountManager accountManager;
     /**
      * The plugin instance.
      */
-    private final PluginBase plugin;
+    private final transient Plugin plugin;
 
     /**
      * Initializes the player event listener.
      *
      * @param accountManager The account manager instance.
      */
-    public PlayerEventListener(final PluginBase plugin,
+    public PlayerEventListener(final Plugin plugin,
                                final AccountManager accountManager) {
         this.plugin = plugin;
         this.accountManager = accountManager;

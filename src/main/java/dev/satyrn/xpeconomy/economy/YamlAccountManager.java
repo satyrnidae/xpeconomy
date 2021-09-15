@@ -3,7 +3,7 @@ package dev.satyrn.xpeconomy.economy;
 import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,18 +18,18 @@ public final class YamlAccountManager extends AccountManagerBase {
     /**
      * The plugin instance.
      */
-    private final PluginBase plugin;
+    private final transient Plugin plugin;
     /**
      * The config file.
      */
-    private final YamlConfiguration ymlConfigFile = new YamlConfiguration();
+    private final transient YamlConfiguration ymlConfigFile = new YamlConfiguration();
 
     /**
      * Creates a new instance of an account manager with a YAML backend.
      *
      * @param plugin The plugin instance.
      */
-    public YamlAccountManager(final ExperienceEconomyConfiguration configuration, final PluginBase plugin) {
+    public YamlAccountManager(final ExperienceEconomyConfiguration configuration, final Plugin plugin) {
         super(configuration);
         this.plugin = plugin;
     }
@@ -37,13 +37,12 @@ public final class YamlAccountManager extends AccountManagerBase {
     /**
      * Loads account data from a YAML file.
      *
-     * @return Whether the load succeeded.
      */
     @Override
-    public boolean load() {
+    public void load() {
         final File configPath = new File(plugin.getDataFolder().getPath() + "/accounts.yml");
         if (!configPath.exists()) {
-            return true;
+            return;
         }
 
         try {
@@ -51,7 +50,7 @@ public final class YamlAccountManager extends AccountManagerBase {
         } catch (InvalidConfigurationException | IOException ex) {
             this.plugin.getLogger().log(Level.SEVERE,
                     String.format("[Accounts] Failed to load accounts.yml: %s", ex.getMessage()), ex);
-            return false;
+            return;
         }
 
         final List<Map<?, ?>> accountsSection = this.ymlConfigFile.getMapList("accounts");
@@ -80,16 +79,14 @@ public final class YamlAccountManager extends AccountManagerBase {
                         ex);
             }
         }
-        return true;
     }
 
     /**
      * Saves account data to a YAML file.
      *
-     * @return Whether the save succeeded.
      */
     @Override
-    public boolean save() {
+    public void save() {
         final File configPath = new File(plugin.getDataFolder().getPath() + "/accounts.yml");
         final List<Map<?, ?>> mapList = new ArrayList<>();
 
@@ -107,8 +104,6 @@ public final class YamlAccountManager extends AccountManagerBase {
         } catch (final IOException ex) {
             this.plugin.getLogger().log(Level.SEVERE,
                     String.format("[Accounts] Failed to save accounts.yml: %s", ex.getMessage()), ex);
-            return false;
         }
-        return true;
     }
 }

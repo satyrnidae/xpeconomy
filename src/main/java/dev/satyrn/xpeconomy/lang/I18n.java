@@ -1,6 +1,6 @@
 package dev.satyrn.xpeconomy.lang;
 
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 /**
  * Message internationalization for Experience Economy
  */
-public class I18n {
+public final class I18n {
     /**
      * The base name for all locales without a language name.
      */
@@ -32,7 +32,7 @@ public class I18n {
     /**
      * The parent plugin instance.
      */
-    private final transient PluginBase plugin;
+    private final transient Plugin plugin;
     /**
      * The default language file (en_us.lang).
      */
@@ -59,7 +59,7 @@ public class I18n {
      *
      * @param plugin The parent plugin instance.
      */
-    public I18n(final PluginBase plugin) {
+    public I18n(final Plugin plugin) {
         this.plugin = plugin;
         this.defaultBundle = ResourceBundle.getBundle(BASE_NAME, this.defaultLocale, new Utf8LangFileControl());
         this.localeBundle = this.defaultBundle;

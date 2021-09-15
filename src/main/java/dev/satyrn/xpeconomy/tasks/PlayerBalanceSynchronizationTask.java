@@ -3,18 +3,18 @@ package dev.satyrn.xpeconomy.tasks;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.math.BigDecimal;
 import java.util.logging.Level;
 
-public class PlayerBalanceSynchronizationTask extends BukkitRunnable {
-    private final PluginBase plugin;
-    private final Player player;
-    private final Account account;
+public final class PlayerBalanceSynchronizationTask extends BukkitRunnable {
+    private final transient Plugin plugin;
+    private final transient Player player;
+    private final transient Account account;
 
-    public PlayerBalanceSynchronizationTask(final PluginBase plugin, final Player player, final Account account) {
+    public PlayerBalanceSynchronizationTask(final Plugin plugin, final Player player, final Account account) {
         this.plugin = plugin;
         this.player = player;
         this.account = account;

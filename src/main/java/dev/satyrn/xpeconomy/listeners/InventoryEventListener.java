@@ -12,7 +12,7 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 
 import java.util.UUID;
 import java.util.logging.Level;
@@ -21,20 +21,25 @@ public final class InventoryEventListener implements Listener {
     /**
      * The account manager instance.
      */
-    private final AccountManager accountManager;
-    private final PluginBase plugin;
+    private final transient AccountManager accountManager;
+    private final transient Plugin plugin;
 
     /**
      * Initializes the player event listener.
      *
      * @param accountManager The account manager instance.
      */
-    public InventoryEventListener(final PluginBase plugin,
+    public InventoryEventListener(final Plugin plugin,
                                   final AccountManager accountManager) {
         this.plugin = plugin;
         this.accountManager = accountManager;
     }
 
+    /**
+     * Handles the event that is called when a user enchants an item.
+     *
+     * @param e The event arguments.
+     */
     @EventHandler
     public void onEnchantItem(EnchantItemEvent e) {
         if (e.isCancelled()) return;
@@ -46,25 +51,28 @@ public final class InventoryEventListener implements Listener {
                 .runTaskLater(this.plugin, 1L);
     }
 
+    /**
+     * Handles the event that is called when a user takes or attempts to take an item from the anvil's third slot.
+     *
+     * @param e The event arguments.
+     */
     @EventHandler
     public void onAnvilUsed(InventoryClickEvent e) {
         if (e.isCancelled()) return;
         final HumanEntity whoClicked = e.getWhoClicked();
 
-        if (!(whoClicked instanceof Player)) return;
+        if (!(whoClicked instanceof final Player player)) return;
 
-        final Player player = (Player) whoClicked;
         final Inventory inventory = e.getInventory();
 
-        if (!(inventory instanceof AnvilInventory)) return;
+        if (!(inventory instanceof final AnvilInventory anvilInventory)) return;
 
-        final AnvilInventory anvilInventory = (AnvilInventory) inventory;
         final InventoryView view = e.getView();
         final int rawSlot = e.getRawSlot();
 
         if (rawSlot == view.convertSlot(rawSlot) && rawSlot == 2) {
-            final ItemStack repairedItem = anvilInventory.getItem(rawSlot);
-            if (repairedItem != null) {
+            final ItemStack result = anvilInventory.getItem(rawSlot);
+            if (result != null) {
                 this.plugin.getLogger().log(Level.FINE,
                         "[Events] Anvil usage scheduled account balance synchronization.");
 

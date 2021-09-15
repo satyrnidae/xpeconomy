@@ -10,7 +10,7 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -28,7 +28,7 @@ public final class ExperienceEconomy implements Economy {
     /**
      * The parent plugin instance.
      */
-    private final transient PluginBase plugin;
+    private final transient Plugin plugin;
     /**
      * The account manager instance.
      */
@@ -41,7 +41,7 @@ public final class ExperienceEconomy implements Economy {
      * @param plugin         The parent plugin instance.
      * @param accountManager The account manager instance.
      */
-    public ExperienceEconomy(final PluginBase plugin, final AccountManager accountManager,
+    public ExperienceEconomy(final Plugin plugin, final AccountManager accountManager,
                              final ExperienceEconomyConfiguration configuration) {
         this.plugin = plugin;
         this.accountManager = accountManager;

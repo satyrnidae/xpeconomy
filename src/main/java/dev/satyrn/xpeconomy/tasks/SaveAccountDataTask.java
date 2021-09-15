@@ -1,16 +1,16 @@
 package dev.satyrn.xpeconomy.tasks;
 
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.logging.Level;
 
-public class SaveAccountDataTask extends BukkitRunnable {
-    private final transient PluginBase plugin;
+public final class SaveAccountDataTask extends BukkitRunnable {
+    private final transient Plugin plugin;
     private final transient AccountManager accountManager;
 
-    public SaveAccountDataTask(final PluginBase plugin, final AccountManager accountManager) {
+    public SaveAccountDataTask(final Plugin plugin, final AccountManager accountManager) {
         this.plugin = plugin;
         this.accountManager = accountManager;
     }

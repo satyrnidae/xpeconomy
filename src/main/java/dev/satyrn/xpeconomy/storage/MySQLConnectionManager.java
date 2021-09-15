@@ -2,7 +2,7 @@ package dev.satyrn.xpeconomy.storage;
 
 import dev.satyrn.xpeconomy.api.storage.ConnectionManager;
 import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,15 +14,15 @@ import java.util.logging.Level;
 /**
  * Represents a MySQL connection to a data source.
  */
-public class MySQLConnectionManager implements ConnectionManager {
+public final class MySQLConnectionManager implements ConnectionManager {
     /**
      * The plugin instance.
      */
-    private final PluginBase plugin;
+    private final transient Plugin plugin;
     /**
      * The configuration instance.
      */
-    private final ExperienceEconomyConfiguration configuration;
+    private final transient ExperienceEconomyConfiguration configuration;
 
     /**
      * Initializes the connection class.
@@ -30,7 +30,7 @@ public class MySQLConnectionManager implements ConnectionManager {
      * @param plugin        The plugin instance.
      * @param configuration The configuration instance.
      */
-    public MySQLConnectionManager(final ExperienceEconomyConfiguration configuration, final PluginBase plugin) {
+    public MySQLConnectionManager(final ExperienceEconomyConfiguration configuration, final Plugin plugin) {
         this.plugin = plugin;
         this.configuration = configuration;
     }

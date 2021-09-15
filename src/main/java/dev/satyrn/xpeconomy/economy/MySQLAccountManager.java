@@ -2,7 +2,7 @@ package dev.satyrn.xpeconomy.economy;
 
 import dev.satyrn.xpeconomy.api.storage.ConnectionManager;
 import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
-import org.bukkit.plugin.PluginBase;
+import org.bukkit.plugin.Plugin;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -16,7 +16,7 @@ public final class MySQLAccountManager extends AccountManagerBase {
     /**
      * The plugin instance.
      */
-    private final transient PluginBase plugin;
+    private final transient Plugin plugin;
     /**
      * The connection manager.
      */
@@ -30,7 +30,7 @@ public final class MySQLAccountManager extends AccountManagerBase {
      * @param configuration     The configuration instance.
      * @param connectionManager The connection manager.
      */
-    public MySQLAccountManager(final ExperienceEconomyConfiguration configuration, final PluginBase plugin,
+    public MySQLAccountManager(final ExperienceEconomyConfiguration configuration, final Plugin plugin,
                                final ConnectionManager connectionManager) {
         super(configuration);
         this.plugin = plugin;
@@ -41,12 +41,11 @@ public final class MySQLAccountManager extends AccountManagerBase {
     /**
      * Loads account details from the database.
      *
-     * @return Whether the load succeeded.
      */
     @Override
-    public boolean load() {
+    public void load() {
         try (final Connection connection = this.connectionManager.connect()) {
-            if (connection == null) return false;
+            if (connection == null) return;
 
             this.createTable(connection);
 
@@ -64,20 +63,17 @@ public final class MySQLAccountManager extends AccountManagerBase {
         } catch (final SQLException ex) {
             this.plugin.getLogger().log(Level.SEVERE,
                     String.format("Failed to load account information from the database: %s", ex.getMessage()), ex);
-            return false;
         }
-        return true;
     }
 
     /**
      * Saves the accounts to the database.
      *
-     * @return Whether or not the save succeeded
      */
     @Override
-    public boolean save() {
+    public void save() {
         try (final Connection connection = this.connectionManager.connect()) {
-            if (connection == null) return false;
+            if (connection == null) return;
 
             this.createTable(connection);
 
@@ -99,9 +95,7 @@ public final class MySQLAccountManager extends AccountManagerBase {
         } catch (final SQLException ex) {
             this.plugin.getLogger().log(Level.SEVERE,
                     String.format("Failed to save account information to the database: %s", ex.getMessage()), ex);
-            return false;
         }
-        return true;
     }
 
     /**
