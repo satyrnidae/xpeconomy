@@ -105,3 +105,6 @@ paperclip.properties
 !gradle/wrapper/gradle-wrapper.jar
 
 test-plugin.settings.gradle.kts
+
+# MasterPlan Backups
+*.plan_bak*
