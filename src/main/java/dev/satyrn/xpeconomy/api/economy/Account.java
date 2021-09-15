@@ -29,13 +29,6 @@ public interface Account {
      */
     BigDecimal getBalance();
 
-
-    /**
-     * Gets the raw experience point value on the account.
-     * @return The raw experience point balance.
-     */
-    BigDecimal getBalanceRaw();
-
     /**
      * Sets the balance on the account.
      *
@@ -43,6 +36,13 @@ public interface Account {
      * @return The account instance.
      */
     Account setBalance(final BigDecimal value);
+
+    /**
+     * Gets the raw experience point value on the account.
+     *
+     * @return The raw experience point balance.
+     */
+    BigDecimal getBalanceRaw();
 
     /**
      * Sets the balance on the account and optionally updates the player's XP value.
@@ -55,7 +55,8 @@ public interface Account {
 
     /**
      * Sets the raw balance value.
-     * @param value The experience point balance.
+     *
+     * @param value         The experience point balance.
      * @param updateXPValue If true, also updates the player's XP value to match.
      * @return The account instance.
      */
