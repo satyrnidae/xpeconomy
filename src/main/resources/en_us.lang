@@ -1,10 +1,18 @@
-command.balance.invalid_sender=§cThis command must be executed by a player, or specify a player to query.
+command.about.result=§e{0}\nVersion: §a{1}\nAuthors: {2}
+
 command.balance.permission.exempt=§cYou don''t have permission to check §e{0}''s§c balance.
 command.balance.permission.others=§cYou don''t have permission to check others'' balance.
 command.balance.permission=§cYou don''t have permission to check balances.
 command.balance.result.others=§e{0}''s§r account balance is §e{1}§r.
 command.balance.result=Your account balance is §e{0}§r.
 
+command.experience.permission.exempt=§cYou don''t have permission to check §e{0}''s§c experience.
+command.experience.permission.others=§cYou don''t have permission to check others'' experience.
+command.experience.permission=§cYou don''t have permission to check experience.
+command.experience.result.others=§e{0}''s§r experience is §e{1} {2}§r and §e{3} {4}§r, for a total of §e{5} {6}§r.
+command.experience.result=Your experience is §e{0} {1}§r and §e{2} {3}§r, for a total of §e{4} {5}§r.
+
+command.generic.invalid_sender.non_player=§cThis command must be executed by a player, or specify a player to query.
 command.generic.invalid_sender.no_account=§cYou don''t have an account.
 command.generic.invalid_target.no_account=§e{0}§c doesn''t have an account.
 command.generic.invalid_target=§cUnable to find the player §e{0}§c.
@@ -17,22 +25,19 @@ command.pay.permission=§cYou don't have permission to pay others.
 command.pay.result=Paid §e{0} {1}§r xp.
 command.pay.invalid_target=§cThere is no reason to pay yourself anything!
 
-command.set_balance.invalid_amount=§cThe balance §e{0}§c is not a valid account balance.
-command.set_balance.invalid_sender=§cThis command must be executed by a player, or specify a player to query.
-command.set_balance.permission.exempt=§cYou don''t have permission to set §e{0}''s§c account balance.
-command.set_balance.permission.others=§cYou don''t have permission to set others'' account balance.
-command.set_balance.permission=§cYou don''t have permission to set account balances.
-command.set_balance.result.others=§e{0}''s§r account balance has been set to §e{1}§r xp.
-command.set_balance.result=Your account balance has been set to §e{0}§r xp.
-
-currency.levels.name.plural=Levels
-currency.levels.name=Level
-currency.points.name.plural=XP
-currency.points.name=XP
-currency.per_hundred.name=XP
-currency.per_hundred.plural=XP
+currency.levels.name.plural=levels
+currency.levels.name=level
+currency.points.name.plural=xp
+currency.points.name=xp
+currency.per_hundred.name=xp%
+currency.per_hundred.plural=xp%
 
 economy.account_not_found=Player does not have an account on this server.
 economy.insufficient_funds=Insufficient funds available.
 economy.negative_deposit=Cannot deposit a negative amount into an account.
 economy.negative_withdrawal=Cannot withdraw a negative amount from an account.
+
+experience.level=level
+experience.level.plural=levels
+experience.point=point
+experience.point.plural=points

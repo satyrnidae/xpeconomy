@@ -2,9 +2,9 @@ package dev.satyrn.xpeconomy;
 
 import dev.satyrn.xpeconomy.api.commands.CommandHandler;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.commands.AboutCommandHandler;
 import dev.satyrn.xpeconomy.commands.BalanceCommandHandler;
 import dev.satyrn.xpeconomy.commands.PayCommandHandler;
-import dev.satyrn.xpeconomy.commands.SetBalanceCommandHandler;
 import dev.satyrn.xpeconomy.commands.XPEconomyCommandHandler;
 import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
 import dev.satyrn.xpeconomy.economy.ExperienceEconomy;
@@ -17,6 +17,7 @@ import dev.satyrn.xpeconomy.listeners.WorldEventListener;
 import dev.satyrn.xpeconomy.storage.MySQLConnectionManager;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.command.Command;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -93,12 +94,13 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
      */
     private void registerCommands (final AccountManager accountManager, final Permission permissionProvider,
                                    final ExperienceEconomyConfiguration configuration) {
+        final CommandHandler aboutCommandHandler = new AboutCommandHandler(permissionProvider, this);
         final CommandHandler balanceCommandHandler = new BalanceCommandHandler(accountManager, permissionProvider,
                 configuration.economyMethod.value()).setupCommand(this, "balance");
         final CommandHandler payCommandHandler = new PayCommandHandler(accountManager, permissionProvider,
                 configuration.economyMethod.value()).setupCommand(this, "pay");
 
-        new XPEconomyCommandHandler(permissionProvider, balanceCommandHandler, payCommandHandler)
+        new XPEconomyCommandHandler(permissionProvider, aboutCommandHandler, balanceCommandHandler, payCommandHandler)
                 .setupCommand(this, "xpeconomy");
     }
 
