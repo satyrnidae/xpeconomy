@@ -13,7 +13,7 @@
 
     <description>No more fiat currencies! Tie your economy directly to your XP points!</description>
     <properties>
-        <java.version>17.0.1</java.version>
+        <java.version>1.17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <url>https://satyrn.dev/</url>
