@@ -92,8 +92,9 @@ public enum EconomyMethod {
         value = this.scale(value);
 
         StringBuilder pattern = new StringBuilder("#,##0");
-        if (this == EconomyMethod.LEVELS) {
-            pattern.append(".00");
+
+        if (this.scale != 0) {
+            pattern.append(".").append("0".repeat(Math.max(0, this.scale)));
         }
         final DecimalFormat formatter = new DecimalFormat(pattern.toString());
 
