@@ -1,4 +1,7 @@
 # Experience Economy
+
+![Maven](https://github.com/satyrnidae/xpeconomy/actions/workflows/maven.yml/badge.svg)
+
 No more fiat currencies!
 
 An accurate Experience Point-based economy system for Paper 1.18.1+!
