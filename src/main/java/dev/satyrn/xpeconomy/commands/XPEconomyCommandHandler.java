@@ -19,6 +19,7 @@ import java.util.Locale;
 public final class XPEconomyCommandHandler extends CommandHandler {
     private final @NotNull CommandHandler aboutCommandHandler;
     private final @NotNull CommandHandler balanceCommandHandler;
+    private final @NotNull CommandHandler experienceCommandHandler;
     private final @NotNull CommandHandler payCommandHandler;
 
     /**
@@ -28,10 +29,12 @@ public final class XPEconomyCommandHandler extends CommandHandler {
     public XPEconomyCommandHandler(final @NotNull Permission permission,
                                    final @NotNull CommandHandler aboutCommandHandler,
                                    final @NotNull CommandHandler balanceCommandHandler,
+                                   final @NotNull CommandHandler experienceCommandHandler,
                                    final @NotNull CommandHandler payCommandHandler) {
         super(permission);
         this.aboutCommandHandler = aboutCommandHandler;
         this.balanceCommandHandler = balanceCommandHandler;
+        this.experienceCommandHandler = experienceCommandHandler;
         this.payCommandHandler = payCommandHandler;
     }
 
@@ -58,7 +61,9 @@ public final class XPEconomyCommandHandler extends CommandHandler {
             case "balance", "bal" -> {
                 return this.balanceCommandHandler.onCommand(sender, command, label, args);
             }
-            case "experience", "exp", "xp" -> throw new NotImplementedException("Experience command is not yet implemented.");
+            case "experience", "exp", "xp" -> {
+                return this.experienceCommandHandler.onCommand(sender, command, label, args);
+            }
             case "givebalance", "givebal", "give" -> throw new NotImplementedException("Give balance command is not yet implemented");
             case "help" -> throw new NotImplementedException("Help command is not yet implemented.");
             case "pay" -> {

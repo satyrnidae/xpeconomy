@@ -2,10 +2,7 @@ package dev.satyrn.xpeconomy;
 
 import dev.satyrn.xpeconomy.api.commands.CommandHandler;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
-import dev.satyrn.xpeconomy.commands.AboutCommandHandler;
-import dev.satyrn.xpeconomy.commands.BalanceCommandHandler;
-import dev.satyrn.xpeconomy.commands.PayCommandHandler;
-import dev.satyrn.xpeconomy.commands.XPEconomyCommandHandler;
+import dev.satyrn.xpeconomy.commands.*;
 import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
 import dev.satyrn.xpeconomy.economy.ExperienceEconomy;
 import dev.satyrn.xpeconomy.economy.MySQLAccountManager;
@@ -97,10 +94,16 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
         final CommandHandler aboutCommandHandler = new AboutCommandHandler(permissionProvider, this);
         final CommandHandler balanceCommandHandler = new BalanceCommandHandler(accountManager, permissionProvider,
                 configuration.economyMethod.value()).setupCommand(this, "balance");
+        final CommandHandler experienceCommandHandler = new ExperienceCommandHandler(permissionProvider, accountManager,
+                configuration.economyMethod.value()).setupCommand(this, "experience");
         final CommandHandler payCommandHandler = new PayCommandHandler(accountManager, permissionProvider,
                 configuration.economyMethod.value()).setupCommand(this, "pay");
 
-        new XPEconomyCommandHandler(permissionProvider, aboutCommandHandler, balanceCommandHandler, payCommandHandler)
+        new XPEconomyCommandHandler(permissionProvider,
+                aboutCommandHandler,
+                balanceCommandHandler,
+                experienceCommandHandler,
+                payCommandHandler)
                 .setupCommand(this, "xpeconomy");
     }
 
