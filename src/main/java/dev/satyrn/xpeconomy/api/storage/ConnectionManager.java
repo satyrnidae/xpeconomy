@@ -1,5 +1,7 @@
 package dev.satyrn.xpeconomy.api.storage;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.sql.Connection;
 
 /**
@@ -11,5 +13,5 @@ public interface ConnectionManager {
      *
      * @return The connection to the data source.
      */
-    Connection connect();
+    @Nullable Connection connect();
 }

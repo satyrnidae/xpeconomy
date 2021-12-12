@@ -65,10 +65,7 @@ public final class YamlAccountManager extends AccountManagerBase {
                         account.setBalanceRaw(BigDecimal.valueOf(balance), false);
                     }
                 }
-                if (account.getUUID() == null) {
-                    this.plugin.getLogger().log(Level.WARNING,
-                            "[Accounts] Failed to load an account from accounts.yml: UUID was not set.");
-                }
+
                 this.plugin.getLogger().log(Level.FINE,
                         String.format("[Accounts] Loaded an account for player %s with balance %s",
                                 account.getUUID(), account.getBalance().doubleValue()));

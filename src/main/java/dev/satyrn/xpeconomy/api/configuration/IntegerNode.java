@@ -1,5 +1,7 @@
 package dev.satyrn.xpeconomy.api.configuration;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Represents a configuration node with an integer value.
  */
@@ -10,8 +12,8 @@ public final class IntegerNode extends ConfigurationNode<Integer> {
      * @param parent The parent container.
      * @param name   The node's name.
      */
-    public IntegerNode(ConfigurationContainer parent, final String name) {
-        super(parent, name);
+    public IntegerNode(final @NotNull ConfigurationContainer parent, final @NotNull String name) {
+        super(parent, name, parent.config);
     }
 
     /**
@@ -20,7 +22,7 @@ public final class IntegerNode extends ConfigurationNode<Integer> {
      * @return The integer value.
      */
     @Override
-    public Integer value() {
+    public @NotNull Integer value() {
         return this.config.getInt(this.getPath());
     }
 }

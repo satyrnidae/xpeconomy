@@ -7,6 +7,8 @@ import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -47,7 +49,7 @@ public abstract class AccountManagerBase implements AccountManager {
      * @return Whether the account exists.
      */
     @Override
-    public boolean hasAccount(final UUID uuid) {
+    public boolean hasAccount(final @NotNull UUID uuid) {
         return this.getAccount(uuid) != null;
     }
 
@@ -58,9 +60,10 @@ public abstract class AccountManagerBase implements AccountManager {
      * @return The new account.
      */
     @Override
-    public Account createAccount(final OfflinePlayer player) {
+    public @Nullable Account createAccount(final @Nullable OfflinePlayer player) {
+        PlayerAccount account = null;
         if (player != null) {
-            final PlayerAccount account = new PlayerAccount(this.economyMethod, player.getUniqueId());
+            account = new PlayerAccount(this.economyMethod, player.getUniqueId());
             final Player onlinePlayer = player.getPlayer();
             if (onlinePlayer != null) {
                 BigDecimal playerBalance = PlayerXPUtils.getPlayerXPTotal(player.getUniqueId());
@@ -74,7 +77,7 @@ public abstract class AccountManagerBase implements AccountManager {
 
             this.accounts.add(account);
         }
-        return null;
+        return account;
     }
 
     /**
@@ -84,7 +87,7 @@ public abstract class AccountManagerBase implements AccountManager {
      * @return The account instance.
      */
     @Override
-    public Account getAccount(final UUID uuid) {
+    public Account getAccount(final @NotNull UUID uuid) {
         for (PlayerAccount account : this.accounts) {
             if (account.getUUID().equals(uuid)) {
                 return account;

@@ -1,6 +1,8 @@
 package dev.satyrn.xpeconomy.api.configuration;
 
 import org.bukkit.configuration.Configuration;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents a base type for a class which contains several other configuration containers and/or nodes.
@@ -11,8 +13,8 @@ public abstract class ConfigurationContainer extends ConfigurationNode<Void> {
      *
      * @param parent The node parent.
      */
-    protected ConfigurationContainer(final ConfigurationContainer parent, String name) {
-        super(parent, name);
+    protected ConfigurationContainer(final @NotNull ConfigurationContainer parent, final @NotNull String name) {
+        super(parent, name, parent.config);
     }
 
     /**
@@ -20,9 +22,8 @@ public abstract class ConfigurationContainer extends ConfigurationNode<Void> {
      *
      * @param config The configuration instance.
      */
-    protected ConfigurationContainer(final Configuration config) {
-        super(null, "");
-        this.config = config;
+    protected ConfigurationContainer(final @NotNull Configuration config) {
+        super(null, "", config);
     }
 
     /**
@@ -31,7 +32,7 @@ public abstract class ConfigurationContainer extends ConfigurationNode<Void> {
      * @return Null.
      */
     @Override
-    public final Void value() {
+    public final @Nullable Void value() {
         return null;
     }
 }

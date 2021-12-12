@@ -1,5 +1,8 @@
 package dev.satyrn.xpeconomy.api.configuration;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Represents a configuration node with a Log Level value.
  */
@@ -10,8 +13,8 @@ public abstract class EnumNode<E extends Enum<E>> extends ConfigurationNode<E> {
      * @param parent The parent container.
      * @param name   The node's name.
      */
-    public EnumNode(ConfigurationContainer parent, final String name) {
-        super(parent, name);
+    public EnumNode(final @NotNull ConfigurationContainer parent, final @NotNull String name) {
+        super(parent, name, parent.config);
     }
 
     /**
@@ -20,8 +23,8 @@ public abstract class EnumNode<E extends Enum<E>> extends ConfigurationNode<E> {
      * @return The Log Level value.
      */
     @Override
-    public final E value() {
-        final String enumName = this.config.getString(this.getPath());
+    public final @NotNull E value() {
+        final @Nullable String enumName = this.config.getString(this.getPath());
         if (enumName != null && !enumName.isEmpty()) {
             try {
                 return this.parse(enumName);
@@ -39,12 +42,12 @@ public abstract class EnumNode<E extends Enum<E>> extends ConfigurationNode<E> {
      * @return The parsed enum value.
      * @throws IllegalArgumentException Thrown when the enum value parses.
      */
-    protected abstract E parse(String value) throws IllegalArgumentException;
+    protected abstract @NotNull E parse(final @NotNull String value) throws IllegalArgumentException;
 
     /**
      * Gets the default enum value.
      *
      * @return The default enum value.
      */
-    protected abstract E getDefault();
+    protected abstract @NotNull E getDefault();
 }

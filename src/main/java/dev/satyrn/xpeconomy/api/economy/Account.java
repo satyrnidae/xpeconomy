@@ -1,5 +1,7 @@
 package dev.satyrn.xpeconomy.api.economy;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -12,7 +14,7 @@ public interface Account {
      *
      * @return The player UUID of the account owner.
      */
-    UUID getUUID();
+    @NotNull UUID getUUID();
 
     /**
      * Sets the account owner's player UUID.
@@ -20,14 +22,14 @@ public interface Account {
      * @param value The account owner's UUID.
      * @return The account instance.
      */
-    Account setUUID(UUID value);
+    @NotNull Account setUUID(final @NotNull UUID value);
 
     /**
      * Gets the balance on the account.
      *
      * @return The account balance.
      */
-    BigDecimal getBalance();
+    @NotNull BigDecimal getBalance();
 
     /**
      * Sets the balance on the account.
@@ -35,14 +37,14 @@ public interface Account {
      * @param value The new account balance.
      * @return The account instance.
      */
-    Account setBalance(final BigDecimal value);
+    @NotNull Account setBalance(final @NotNull BigDecimal value);
 
     /**
      * Gets the raw experience point value on the account.
      *
      * @return The raw experience point balance.
      */
-    BigDecimal getBalanceRaw();
+    @NotNull BigDecimal getBalanceRaw();
 
     /**
      * Sets the balance on the account and optionally updates the player's XP value.
@@ -51,7 +53,7 @@ public interface Account {
      * @param updateXPValue If true, also updates the player's XP value to match.
      * @return The account instance.
      */
-    Account setBalance(final BigDecimal value, final boolean updateXPValue);
+    @NotNull Account setBalance(final @NotNull BigDecimal value, final boolean updateXPValue);
 
     /**
      * Sets the raw balance value.
@@ -60,7 +62,7 @@ public interface Account {
      * @param updateXPValue If true, also updates the player's XP value to match.
      * @return The account instance.
      */
-    Account setBalanceRaw(final BigDecimal value, final boolean updateXPValue);
+    @NotNull Account setBalanceRaw(final @NotNull BigDecimal value, final boolean updateXPValue);
 
     /**
      * Checks whether the account can withdraw a given amount.
@@ -68,20 +70,19 @@ public interface Account {
      * @param value The amount to withdraw.
      * @return Whether the account can withdraw a given amount.
      */
-    boolean has(final BigDecimal value);
+    boolean has(final @NotNull BigDecimal value);
 
     /**
      * Withdraws a given amount from the account.
      *
      * @param value The account to withdraw.
-     * @return Whether the withdrawal was successful.
      */
-    boolean withdraw(final BigDecimal value);
+    void withdraw(final @NotNull BigDecimal value);
 
     /**
      * Deposits a given amount into the account.
      *
      * @param value The amount to deposit.
      */
-    boolean deposit(final BigDecimal value);
+    void deposit(final @NotNull BigDecimal value);
 }

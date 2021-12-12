@@ -1,6 +1,8 @@
 package dev.satyrn.xpeconomy.api.economy;
 
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -26,7 +28,7 @@ public interface AccountManager {
      * @param uuid The player UUID.
      * @return Whether the account exists.
      */
-    boolean hasAccount(final UUID uuid);
+    boolean hasAccount(final @NotNull UUID uuid);
 
     /**
      * Creates an account for a player.
@@ -34,7 +36,7 @@ public interface AccountManager {
      * @param player The player instance.
      * @return The new account.
      */
-    Account createAccount(final OfflinePlayer player);
+    @NotNull Account createAccount(final @NotNull OfflinePlayer player);
 
     /**
      * Gets an account with a specific player UUID.
@@ -42,5 +44,5 @@ public interface AccountManager {
      * @param uuid The player UUID
      * @return The account instance.
      */
-    Account getAccount(final UUID uuid);
+    @Nullable Account getAccount(final @NotNull UUID uuid);
 }

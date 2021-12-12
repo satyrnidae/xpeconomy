@@ -13,7 +13,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -99,12 +98,7 @@ public final class ExperienceEconomy implements Economy {
      */
     @Override
     public String format(final double amount) {
-        StringBuilder pattern = new StringBuilder("#,###");
-        if (this.economyMethod == EconomyMethod.LEVELS) {
-            pattern.append(".00");
-        }
-        final DecimalFormat formatter = new DecimalFormat(pattern.toString());
-        return formatter.format(amount);
+        return this.economyMethod.toString(BigDecimal.valueOf(amount));
     }
 
     /**
@@ -115,7 +109,7 @@ public final class ExperienceEconomy implements Economy {
      */
     @Override
     public String currencyNamePlural() {
-        return I18n.tr("currency.name.plural");
+        return this.economyMethod.getCurrencyNamePlural();
     }
 
     /**
@@ -126,7 +120,7 @@ public final class ExperienceEconomy implements Economy {
      */
     @Override
     public String currencyNameSingular() {
-        return I18n.tr("currency.name");
+        return this.economyMethod.getCurrencyName();
     }
 
     /**
@@ -210,7 +204,7 @@ public final class ExperienceEconomy implements Economy {
     @Override
     public double getBalance(final OfflinePlayer player) {
         final Account account = this.accountManager.getAccount(player.getUniqueId());
-        return account.getBalance().doubleValue();
+        return account == null ? 0.0D : account.getBalance().doubleValue();
     }
 
     /**
@@ -260,7 +254,7 @@ public final class ExperienceEconomy implements Economy {
     @Override
     public boolean has(final OfflinePlayer player, final double amount) {
         final Account account = this.accountManager.getAccount(player.getUniqueId());
-        return account.has(BigDecimal.valueOf(amount));
+        return account != null && account.has(BigDecimal.valueOf(amount));
     }
 
     /**
@@ -324,11 +318,9 @@ public final class ExperienceEconomy implements Economy {
         final BigDecimal decimalAmount = BigDecimal.valueOf(amount);
         if (account.has(decimalAmount)) {
             account.withdraw(decimalAmount);
-            return new EconomyResponse(amount, account.getBalance().doubleValue(), EconomyResponse.ResponseType.SUCCESS,
-                    I18n.tr("economy.successful_withdrawal"));
+            return new EconomyResponse(amount, account.getBalance().doubleValue(), EconomyResponse.ResponseType.SUCCESS, "");
         }
-        return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE,
-                I18n.tr("economy.insufficient_funds"));
+        return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE, "");
     }
 
     /**
@@ -587,7 +579,8 @@ public final class ExperienceEconomy implements Economy {
      */
     @Override
     public boolean createPlayerAccount(final OfflinePlayer player) {
-        return accountManager.createAccount(player) != null;
+        accountManager.createAccount(player);
+        return true;
     }
 
     /**

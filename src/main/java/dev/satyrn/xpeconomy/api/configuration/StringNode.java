@@ -1,5 +1,8 @@
 package dev.satyrn.xpeconomy.api.configuration;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Represents a configuration node with a String value.
  */
@@ -10,8 +13,8 @@ public final class StringNode extends ConfigurationNode<String> {
      * @param parent The parent container.
      * @param name   The node's name.
      */
-    public StringNode(ConfigurationContainer parent, final String name) {
-        super(parent, name);
+    public StringNode(final @NotNull ConfigurationContainer parent, final @NotNull String name) {
+        super(parent, name, parent.config);
     }
 
     /**
@@ -20,7 +23,7 @@ public final class StringNode extends ConfigurationNode<String> {
      * @return The String value.
      */
     @Override
-    public String value() {
+    public @Nullable String value() {
         return this.config.getString(this.getPath());
     }
 }

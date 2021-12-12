@@ -47,6 +47,9 @@ public final class PlayerEventListener implements Listener {
                 "[Events] Player joined world, scheduleing attempt to apply offline balance changes.");
 
         final UUID uuid = e.getPlayer().getUniqueId();
+        if (!this.accountManager.hasAccount(uuid)) {
+            this.accountManager.createAccount(e.getPlayer());
+        }
         new PlayerExperienceSynchronizationTask(this.plugin, uuid, this.accountManager.getAccount(uuid))
                 .runTaskLater(this.plugin, 1L);
     }

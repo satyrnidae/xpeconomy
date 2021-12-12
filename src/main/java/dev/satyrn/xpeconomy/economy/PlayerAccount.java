@@ -4,6 +4,7 @@ import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import org.javatuples.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,7 +51,7 @@ public final class PlayerAccount implements Account {
      * @return The player UUID of the account owner.
      */
     @Override
-    public UUID getUUID() {
+    public @NotNull UUID getUUID() {
         return this.uuid;
     }
 
@@ -61,7 +62,7 @@ public final class PlayerAccount implements Account {
      * @return The account instance.
      */
     @Override
-    public Account setUUID(UUID value) {
+    public @NotNull Account setUUID(@NotNull UUID value) {
         this.uuid = value;
         return this;
     }
@@ -72,20 +73,21 @@ public final class PlayerAccount implements Account {
      * @return The account balance.
      */
     @Override
-    public BigDecimal getBalance() {
-        BigDecimal balance = this.balance;
+    public @NotNull BigDecimal getBalance() {
+        final BigDecimal balance;
 
-        if (this.economyMethod == EconomyMethod.LEVELS) {
-            final Pair<Integer, Float> progress = PlayerXPUtils.toLevelProgress(balance);
-            balance = BigDecimal.valueOf(progress.getValue0())
-                    .add(BigDecimal.valueOf(progress.getValue1()))
-                    .setScale(EconomyMethod.LEVELS.getScale(), EconomyMethod.LEVELS.getRoundingMode());
+        switch (this.economyMethod) {
+            case LEVELS -> balance = PlayerXPUtils.toLevelProgress(this.getBalanceRaw()).getValue0();
+            case PER_HUNDRED -> balance = this.getBalanceRaw().divide(BigDecimal.valueOf(100),
+                                                                        this.economyMethod.getScale(),
+                                                                        this.economyMethod.getRoundingMode());
+            default -> balance = this.getBalanceRaw();
         }
 
         return balance;
     }
 
-    public BigDecimal getBalanceRaw() {
+    public @NotNull BigDecimal getBalanceRaw() {
         return this.balance;
     }
 
@@ -96,7 +98,7 @@ public final class PlayerAccount implements Account {
      * @return The account instance.
      */
     @Override
-    public PlayerAccount setBalance(final BigDecimal value) {
+    public @NotNull PlayerAccount setBalance(final @NotNull BigDecimal value) {
         return this.setBalance(value, false);
     }
 
@@ -108,16 +110,15 @@ public final class PlayerAccount implements Account {
      * @return The account instance.
      */
     @Override
-    public PlayerAccount setBalance(BigDecimal value, final boolean updateXPValue) {
-        if (this.economyMethod == EconomyMethod.LEVELS) {
-            final int level = value.intValue();
-            final float progress = value.remainder(BigDecimal.ONE)
-                    .setScale(EconomyMethod.LEVELS.getScale(), EconomyMethod.LEVELS.getRoundingMode()).floatValue();
-
-            value = PlayerXPUtils.getTotalXPValue(level, progress);
+    public @NotNull PlayerAccount setBalance(final @NotNull BigDecimal value, final boolean updateXPValue) {
+        final BigDecimal newBalance;
+        switch (this.economyMethod) {
+            case LEVELS -> newBalance = PlayerXPUtils.getXPForLevel(value);
+            case PER_HUNDRED -> newBalance = value.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.DOWN);
+            default -> newBalance = value;
         }
 
-        return this.setBalanceRaw(value, updateXPValue);
+        return this.setBalanceRaw(newBalance, updateXPValue);
     }
 
     /**
@@ -125,12 +126,13 @@ public final class PlayerAccount implements Account {
      * @param value The experience point balance.
      * @return The account instance.
      */
-    public PlayerAccount setBalanceRaw(final BigDecimal value, final boolean updateXPValue) {
+    public @NotNull PlayerAccount setBalanceRaw(final @NotNull BigDecimal value, final boolean updateXPValue) {
         this.balance = value.setScale(0, RoundingMode.HALF_UP);
 
         if (updateXPValue) {
             PlayerXPUtils.setPlayerXPTotal(this.uuid, this.balance);
         }
+
         this.balance = value;
         return this;
     }
@@ -142,32 +144,31 @@ public final class PlayerAccount implements Account {
      * @return Whether the account can withdraw a given amount.
      */
     @Override
-    public boolean has(BigDecimal value) {
-        if (this.economyMethod == EconomyMethod.LEVELS) {
-            final int level = value.intValue();
-            final float progress = value.remainder(BigDecimal.ONE)
-                    .setScale(EconomyMethod.LEVELS.getScale(), EconomyMethod.LEVELS.getRoundingMode()).floatValue();
-            value = PlayerXPUtils.getTotalXPValue(level, progress);
+    public boolean has(final @NotNull BigDecimal value) {
+        final BigDecimal hasBalance;
+
+        switch (this.economyMethod) {
+            case LEVELS -> hasBalance = PlayerXPUtils.getXPForLevel(value);
+            case PER_HUNDRED -> hasBalance = value.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.DOWN);
+            default -> hasBalance = value;
         }
 
-        return this.balance.compareTo(value) > -1;
+        return this.balance.compareTo(hasBalance) > -1;
     }
 
     /**
      * Withdraws a given amount from the account.
      *
      * @param value The account to withdraw.
-     * @return Whether the withdrawal was successful.
      */
     @Override
-    public boolean withdraw(final BigDecimal value) {
+    public void withdraw(final @NotNull BigDecimal value) {
         if (value.compareTo(BigDecimal.ZERO) < 0 || !this.has(value)) {
-            return false;
+            return;
         }
 
         this.addBalance(value.negate(), true);
 
-        return true;
     }
 
     /**
@@ -176,14 +177,13 @@ public final class PlayerAccount implements Account {
      * @param value The amount to deposit.
      */
     @Override
-    public boolean deposit(final BigDecimal value) {
+    public void deposit(final @NotNull BigDecimal value) {
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            return false;
+            return;
         }
 
         this.addBalance(value, true);
 
-        return true;
     }
 
     /**
@@ -191,14 +191,35 @@ public final class PlayerAccount implements Account {
      * @param value The value to add
      * @param updateXPValue If true, also updates the player's XP value to match.
      */
-    private void addBalance(BigDecimal value, boolean updateXPValue) {
-        if (this.economyMethod == EconomyMethod.LEVELS) {
-            final int level = value.intValue();
-            final float progress = value.remainder(BigDecimal.ONE).floatValue();
+    private void addBalance(@NotNull BigDecimal value, boolean updateXPValue) {
+        final BigDecimal newValue;
+        switch (this.economyMethod) {
+            case LEVELS -> {
+                // Extract the player's current level / progress from their current balance
+                final Pair<BigDecimal, BigDecimal> levelProgress = PlayerXPUtils.toLevelProgress(this.balance);
 
-            value = PlayerXPUtils.getTotalXPValue(level, progress);
+                // Get XP points for current level progress.
+                final BigDecimal currentLevelXp = PlayerXPUtils.getCurrentLevelProgress(levelProgress.getValue0(),
+                        levelProgress.getValue1());
+
+                // Add the current level with the new value
+                final BigDecimal nextLevel = levelProgress.getValue0().add(value);
+
+                // Get the XP points for the new level value
+                final BigDecimal xpForNextLevel = PlayerXPUtils.getXPForLevel(nextLevel);
+
+                // Add next level and progress XP for the new balance.
+                newValue = xpForNextLevel.add(currentLevelXp);
+            } case PER_HUNDRED -> {
+                // For a per hundred points based economy, we need to multiply
+                // the value by 100 and then add it to the balance.
+                final BigDecimal rawXpValue = value.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.DOWN);
+
+                newValue = this.getBalanceRaw().add(rawXpValue);
+            }
+            default -> newValue = this.getBalanceRaw().add(value);
         }
 
-        this.setBalanceRaw(this.balance.add(value), updateXPValue);
+        this.setBalanceRaw(newValue, updateXPValue);
     }
 }

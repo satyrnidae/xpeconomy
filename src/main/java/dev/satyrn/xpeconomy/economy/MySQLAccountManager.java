@@ -3,6 +3,7 @@ package dev.satyrn.xpeconomy.economy;
 import dev.satyrn.xpeconomy.api.storage.ConnectionManager;
 import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -46,7 +47,6 @@ public final class MySQLAccountManager extends AccountManagerBase {
     public void load() {
         try (final Connection connection = this.connectionManager.connect()) {
             if (connection == null) return;
-
             this.createTable(connection);
 
             final Statement statement = connection.createStatement();
@@ -74,7 +74,6 @@ public final class MySQLAccountManager extends AccountManagerBase {
     public void save() {
         try (final Connection connection = this.connectionManager.connect()) {
             if (connection == null) return;
-
             this.createTable(connection);
 
             final String insertSQLStatement = String.format(
@@ -104,7 +103,7 @@ public final class MySQLAccountManager extends AccountManagerBase {
      * @param connection The connection instance
      * @throws SQLException An error occurs when either getting
      */
-    private void createTable(final Connection connection) throws SQLException {
+    private void createTable(final @NotNull Connection connection) throws SQLException {
         final DatabaseMetaData metaData = connection.getMetaData();
         final String tableName = this.getTableName();
         try (final ResultSet resultSet = metaData.getTables(null, null, tableName,

@@ -1,5 +1,7 @@
 package dev.satyrn.xpeconomy.api.configuration;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Represents a configuration node with a double-precision floating point value.
  */
@@ -10,8 +12,8 @@ public final class DoubleNode extends ConfigurationNode<Double> {
      * @param parent The parent container.
      * @param name   The node name.
      */
-    public DoubleNode(ConfigurationContainer parent, final String name) {
-        super(parent, name);
+    public DoubleNode(final @NotNull ConfigurationContainer parent, final @NotNull String name) {
+        super(parent, name, parent.config);
     }
 
     /**

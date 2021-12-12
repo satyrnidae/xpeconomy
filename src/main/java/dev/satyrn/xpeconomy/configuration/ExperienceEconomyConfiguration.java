@@ -3,6 +3,7 @@ package dev.satyrn.xpeconomy.configuration;
 import dev.satyrn.xpeconomy.api.configuration.*;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
@@ -34,7 +35,7 @@ public final class ExperienceEconomyConfiguration extends ConfigurationContainer
          * @throws IllegalArgumentException The string value could not be parsed as an EconomyMethod.
          */
         @Override
-        public EconomyMethod parse(String value) throws IllegalArgumentException {
+        public @NotNull EconomyMethod parse(@NotNull String value) throws IllegalArgumentException {
             return EconomyMethod.valueOf(value.toUpperCase(Locale.ROOT));
         }
 
@@ -44,7 +45,7 @@ public final class ExperienceEconomyConfiguration extends ConfigurationContainer
          * @return The default EconomyMethod value.
          */
         @Override
-        public EconomyMethod getDefault() {
+        public @NotNull EconomyMethod getDefault() {
             return EconomyMethod.getDefault();
         }
     };

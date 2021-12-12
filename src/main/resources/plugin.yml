@@ -68,6 +68,18 @@ permissions:
   xpeconomy.balance.others:
     default: op
     description: Allows a user to query another user's balance.
+  xpeconomy.balance.set:
+    default: op
+    description: Allows a user to set account balances.
+  xpeconomy.balance.set.others:
+    default: op
+    description: Allows a user to set other users' account balances.
+  xpeconomy.balance.set.exempt:
+    default: false
+    description: Disallows other users from setting this user's account balance.
+  xpeconomy.balance.set.exempt.bypass:
+    default: false
+    description: Allows users to set others' account balance regardless of xpeconomy.balance.set.exempt status.
   xpeconomy.experience:
     default: true
     description: Allows a user to query their own experience point total.

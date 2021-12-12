@@ -1,6 +1,10 @@
 package dev.satyrn.xpeconomy.api.configuration;
 
 import org.bukkit.configuration.Configuration;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 /**
  * Represents a single configuration node. Cannot contain sub-nodes or containers.
@@ -11,27 +15,25 @@ public abstract class ConfigurationNode<E> {
     /**
      * The parent configuration container.
      */
-    protected final transient ConfigurationContainer parent;
+    protected final transient @Nullable ConfigurationContainer parent;
     /**
      * The name of the node.
      */
-    protected final transient String name;
+    protected final transient @NotNull String name;
     /**
      * The configuration file instance.
      */
-    protected transient Configuration config;
+    protected transient @NotNull Configuration config;
 
     /**
      * Initializes a new Configuration node.
      *
      * @param parent The parent node.
      */
-    protected ConfigurationNode(final ConfigurationContainer parent, String name) {
+    protected ConfigurationNode(final @Nullable ConfigurationContainer parent, final @NotNull String name, final @NotNull Configuration config) {
         this.parent = parent;
         this.name = name;
-        if (parent != null) {
-            this.config = parent.config;
-        }
+        this.config = config;
     }
 
     /**
@@ -39,7 +41,7 @@ public abstract class ConfigurationNode<E> {
      *
      * @return The name of the node.
      */
-    protected final String getName() {
+    protected final @NotNull String getName() {
         return this.name;
     }
 
@@ -48,7 +50,7 @@ public abstract class ConfigurationNode<E> {
      *
      * @return The full node path.
      */
-    protected final String getPath() {
+    protected final @NotNull String getPath() {
         return this.getPath(new StringBuilder());
     }
 
@@ -58,10 +60,7 @@ public abstract class ConfigurationNode<E> {
      * @param stringBuilder The StringBuilder with which to build out the full node path.
      * @return The full node path.
      */
-    protected final String getPath(StringBuilder stringBuilder) {
-        if (stringBuilder == null) {
-            stringBuilder = new StringBuilder();
-        }
+    protected final @NotNull String getPath(final @NotNull StringBuilder stringBuilder) {
         if (parent != null) {
             parent.getPath(stringBuilder);
             stringBuilder.append('.');
@@ -76,8 +75,8 @@ public abstract class ConfigurationNode<E> {
      * @return The value as a String.
      */
     @Override
-    public final String toString() {
-        return this.value() == null ? "" : this.value().toString();
+    public final @NotNull String toString() {
+        return this.value() == null ? "" : Objects.requireNonNull(this.value()).toString();
     }
 
     /**
@@ -85,5 +84,5 @@ public abstract class ConfigurationNode<E> {
      *
      * @return The value.
      */
-    public abstract E value();
+    public abstract @Nullable E value();
 }

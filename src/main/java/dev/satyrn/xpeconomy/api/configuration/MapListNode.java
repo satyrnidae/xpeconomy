@@ -1,5 +1,7 @@
 package dev.satyrn.xpeconomy.api.configuration;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.Map;
 
@@ -13,8 +15,8 @@ public final class MapListNode extends ConfigurationNode<List<Map<?,?>>> {
      * @param parent The parent container.
      * @param name The node's name.
      */
-    public MapListNode(final ConfigurationContainer parent, final String name) {
-        super(parent, name);
+    public MapListNode(final @NotNull ConfigurationContainer parent, final @NotNull String name) {
+        super(parent, name, parent.config);
     }
 
     /**
@@ -23,7 +25,7 @@ public final class MapListNode extends ConfigurationNode<List<Map<?,?>>> {
      * @return The entire configuration node as a Map list.
      */
     @Override
-    public List<Map<?,?>> value() {
+    public @NotNull List<Map<?,?>> value() {
         return this.config.getMapList(this.getPath());
     }
 }

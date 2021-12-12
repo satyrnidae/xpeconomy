@@ -54,8 +54,8 @@ public final class PlayerExperienceSynchronizationTask extends BukkitRunnable {
         if (this.account != null) {
             this.plugin.getLogger().log(Level.FINE,
                     String.format("[Tasks] Setting player experience to \"%s\"",
-                            this.account.getBalance().doubleValue()));
-            PlayerXPUtils.setPlayerXPTotal(this.playerID, this.account.getBalance());
+                            this.account.getBalanceRaw().doubleValue()));
+            PlayerXPUtils.setPlayerXPTotal(this.playerID, this.account.getBalanceRaw());
         }
     }
 }
