@@ -14,7 +14,7 @@ Key features:
 - Reflects experience spent via the Anvil and Enchanting Table
 
 Notes for use:
-- Does not support fractional currency at the moment
+- Fractional currency is only supported for the PER_HUNDRED economy type. LEVELS economy cannot support fractional currency due to scaling.
 
 Upcoming Features:
 - Commands for economy management and trade
