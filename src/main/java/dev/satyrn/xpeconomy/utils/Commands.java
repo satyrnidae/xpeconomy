@@ -2,6 +2,7 @@ package dev.satyrn.xpeconomy.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
@@ -56,5 +57,28 @@ public final class Commands {
         }
 
         return entity;
+    }
+
+    public static @NotNull Optional<? extends Player> getOnlinePlayer(final @NotNull String target) {
+        final Collection<? extends Player> players = Bukkit.getOnlinePlayers();
+        final Optional<? extends Player> onlinePlayer;
+        if (UUID_PATTERN.matcher(target).matches()) {
+            final UUID uuid = UUID.fromString(target);
+            onlinePlayer = players.stream().filter(player -> player.getUniqueId() == uuid && player.isOnline()).findFirst();
+        } else {
+            onlinePlayer = Optional.ofNullable(Bukkit.getPlayerExact(target));
+        }
+        return onlinePlayer;
+    }
+
+    public static @NotNull Optional<OfflinePlayer> getPlayer(final @NotNull String target) {
+        final Optional<OfflinePlayer> player;
+        if (UUID_PATTERN.matcher(target).matches()) {
+            final UUID uuid = UUID.fromString(target);
+            player = Optional.of(Bukkit.getOfflinePlayer(uuid));
+        } else {
+            player = Optional.ofNullable(Bukkit.getOfflinePlayerIfCached(target));
+        }
+        return player;
     }
 }
