@@ -7,6 +7,7 @@ import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -71,8 +72,9 @@ public final class BalanceCommandHandler extends CommandHandler {
             if (this.getPermission().has(sender, "xpeconomy.balance")) {
                 // Sender specified a target
                 if (args.length == playerArgument + 1) {
-                    final Optional<Entity> result = Commands.getTarget(args[playerArgument]);
-                    if (result.isPresent() && result.get() instanceof final Player target) {
+                    final Optional<OfflinePlayer> result = Commands.getPlayer(args[playerArgument]);
+                    if (result.isPresent()) {
+                        final OfflinePlayer target = result.get();
                         if (target.getUniqueId() == player.getUniqueId()) {
                             // Player targeted themselves.
                             final Account playerAccount = this.accountManager.getAccount(player.getUniqueId());
@@ -87,7 +89,7 @@ public final class BalanceCommandHandler extends CommandHandler {
                             if (!this.getPermission().has(player, "xpeconomy.balance.others")) {
                                 // Player cannot check others' account balance.
                                 sender.sendMessage(I18n.tr("command.balance.permission.others"));
-                            } else if (this.getPermission().has(target, "xpeconomy.balance.exempt") &&
+                            } else if (this.getPermission().has(target.getPlayer(), "xpeconomy.balance.exempt") &&
                                     !this.getPermission().has(player, "xpeconomy.balance.exempt.bypass")) {
                                 // Player cannot bypass exempt status
                                 sender.sendMessage(I18n.tr("command.balance.permission.exempt", target.getName()));
@@ -122,10 +124,11 @@ public final class BalanceCommandHandler extends CommandHandler {
         } else {
             // Sender is something else so require the Player argument.
             if (args.length != playerArgument + 1) {
-                sender.sendMessage("command.balance.invalid_sender");
+                sender.sendMessage("command.generic.invalid_sender.non_player");
             } else {
-                final Optional<Entity> result = Commands.getTarget(args[playerArgument]);
-                if (result.isPresent() && result.get() instanceof final Player target) {
+                final Optional<OfflinePlayer> result = Commands.getPlayer(args[playerArgument]);
+                if (result.isPresent()) {
+                    final OfflinePlayer target = result.get();
                     final Account targetAccount = this.accountManager.getAccount(target.getUniqueId());
                     if (targetAccount == null) {
                         // Target does not have an active account.
