@@ -58,22 +58,17 @@ public final class XPEconomyCommandHandler extends CommandHandler {
             case "about" -> {
                 return this.aboutCommandHandler.onCommand(sender, command, label, args);
             }
-            case "balance", "bal" -> {
+            case "bal", "balance" -> {
                 return this.balanceCommandHandler.onCommand(sender, command, label, args);
             }
-            case "experience", "exp", "xp" -> {
-                return this.experienceCommandHandler.onCommand(sender, command, label, args);
-            }
-            case "givebalance", "givebal", "give" -> throw new NotImplementedException("Give balance command is not yet implemented");
-            case "help" -> throw new NotImplementedException("Help command is not yet implemented.");
-            case "pay" -> {
+            case "deposit", "pay" -> {
                 return this.payCommandHandler.onCommand(sender, command, label, args);
             }
-            case "setbalance", "setbal", "set" -> throw new NotImplementedException("Set balance command is not yet implemented.");
-            case "syncbalance", "syncbal", "sync" -> throw new NotImplementedException("Sync balance command is not yet implemented.");
-            case "takebalance", "takebal", "take" -> throw new NotImplementedException("Take balance command is not yet implemented.");
-            default -> throw new NotImplementedException("Help command is not yet implemented.");
+            case "exp", "experience", "xp" -> {
+                return this.experienceCommandHandler.onCommand(sender, command, label, args);
+            }
         }
+        return true;
     }
 
     /**
@@ -102,23 +97,8 @@ public final class XPEconomyCommandHandler extends CommandHandler {
                 if (this.getPermission().has(sender, "xpeconomy.experience")) {
                     completionOptions.add("experience");
                 }
-                if (this.getPermission().has(sender, "xpeconomy.balance.give")) {
-                    completionOptions.add("give");
-                }
-
-                completionOptions.add("help");
-
                 if (sender instanceof Player && this.getPermission().has(sender, "xpeconomy.pay")) {
                     completionOptions.add("pay");
-                }
-                if (this.getPermission().has(sender, "xpeconomy.balance.set")) {
-                    completionOptions.add("setbalance");
-                }
-                if (this.getPermission().has(sender, "xpeconomy.sync")) {
-                    completionOptions.add("sync");
-                }
-                if (this.getPermission().has(sender, "xpeconomy.balance.take")) {
-                    completionOptions.add("take");
                 }
             } else if (args.length > 1) {
                 final String commandName = args[0].toLowerCase(Locale.ROOT);
@@ -126,29 +106,14 @@ public final class XPEconomyCommandHandler extends CommandHandler {
                     case "about" -> {
                         return this.aboutCommandHandler.onTabComplete(sender, command, alias, args);
                     }
-                    case "balance", "bal" -> {
+                    case "bal", "balance" -> {
                         return this.balanceCommandHandler.onTabComplete(sender, command, alias, args);
                     }
-                    case "experience", "exp", "xp" -> {
-                        throw new NotImplementedException("Experience command is not yet implemented.");
-                    }
-                    case "givebalance", "givebal", "give" -> {
-                        throw new NotImplementedException("GiveBalance command is not yet implemented.");
-                    }
-                    case "help" -> {
-                        throw new NotImplementedException("Help command is not yet implemented.");
-                    }
-                    case "pay" -> {
+                    case "deposit", "pay" -> {
                         return this.payCommandHandler.onTabComplete(sender, command, alias, args);
                     }
-                    case "setbalance", "setbal", "set" -> {
-                        throw new NotImplementedException("Set command is not yet implemented.");
-                    }
-                    case "sync" -> {
-                        throw new NotImplementedException("Sync command is not yet implemented.");
-                    }
-                    case "takebalance", "takebal", "take" -> {
-                        throw new NotImplementedException("Take command is not yet implemented.");
+                    case "exp", "experience", "xp" -> {
+                        return this.experienceCommandHandler.onTabComplete(sender, command, alias, args);
                     }
                     default -> {
                         return new ArrayList<>();
