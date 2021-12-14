@@ -9,6 +9,11 @@ authors: [ saturniidae ]
 description: No more fiat currencies! Tie your economy directly to your XP levels!
 website: https://satyrn.dev/
 commands:
+  addbalance:
+    description: Adds an amount to a player's balance
+    usage: /<command> §o§dAMOUNT§r [§o§dPLAYER§r]
+    aliases:
+      - addbal
   balance:
     description: Displays a user's account balance
     usage: /<command> [§o§dPLAYER§r]

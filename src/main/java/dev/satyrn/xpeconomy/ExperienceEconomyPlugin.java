@@ -14,7 +14,6 @@ import dev.satyrn.xpeconomy.listeners.WorldEventListener;
 import dev.satyrn.xpeconomy.storage.MySQLConnectionManager;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.command.Command;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -92,6 +91,8 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
     private void registerCommands (final AccountManager accountManager, final Permission permissionProvider,
                                    final ExperienceEconomyConfiguration configuration) {
         final CommandHandler aboutCommandHandler = new AboutCommandHandler(permissionProvider, this);
+        final CommandHandler addCommandHandler = new AddCommandHandler(permissionProvider, accountManager,
+                configuration.economyMethod.value()).setupCommand(this, "addbalance");
         final CommandHandler balanceCommandHandler = new BalanceCommandHandler(accountManager, permissionProvider,
                 configuration.economyMethod.value()).setupCommand(this, "balance");
         final CommandHandler experienceCommandHandler = new ExperienceCommandHandler(permissionProvider, accountManager,
@@ -101,10 +102,11 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
 
         new XPEconomyCommandHandler(permissionProvider,
                 aboutCommandHandler,
+                addCommandHandler,
                 balanceCommandHandler,
                 experienceCommandHandler,
                 payCommandHandler)
-                .setupCommand(this, "xpeconomy");
+            .setupCommand(this, "xpeconomy");
     }
 
     private Permission initializePermissionsProvider() {

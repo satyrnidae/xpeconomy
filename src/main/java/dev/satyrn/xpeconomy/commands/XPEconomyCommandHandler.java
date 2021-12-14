@@ -18,6 +18,7 @@ import java.util.Locale;
 
 public final class XPEconomyCommandHandler extends CommandHandler {
     private final @NotNull CommandHandler aboutCommandHandler;
+    private final @NotNull CommandHandler addCommandHandler;
     private final @NotNull CommandHandler balanceCommandHandler;
     private final @NotNull CommandHandler experienceCommandHandler;
     private final @NotNull CommandHandler payCommandHandler;
@@ -28,11 +29,13 @@ public final class XPEconomyCommandHandler extends CommandHandler {
      */
     public XPEconomyCommandHandler(final @NotNull Permission permission,
                                    final @NotNull CommandHandler aboutCommandHandler,
+                                   final @NotNull CommandHandler addCommandHandler,
                                    final @NotNull CommandHandler balanceCommandHandler,
                                    final @NotNull CommandHandler experienceCommandHandler,
                                    final @NotNull CommandHandler payCommandHandler) {
         super(permission);
         this.aboutCommandHandler = aboutCommandHandler;
+        this.addCommandHandler = addCommandHandler;
         this.balanceCommandHandler = balanceCommandHandler;
         this.experienceCommandHandler = experienceCommandHandler;
         this.payCommandHandler = payCommandHandler;
@@ -57,6 +60,9 @@ public final class XPEconomyCommandHandler extends CommandHandler {
         switch (subCommand.toLowerCase(Locale.ROOT)) {
             case "about" -> {
                 return this.aboutCommandHandler.onCommand(sender, command, label, args);
+            }
+            case "add", "addbal", "addbalance" -> {
+                return this.addCommandHandler.onCommand(sender, command, label, args);
             }
             case "bal", "balance" -> {
                 return this.balanceCommandHandler.onCommand(sender, command, label, args);
@@ -105,6 +111,9 @@ public final class XPEconomyCommandHandler extends CommandHandler {
                 switch (commandName) {
                     case "about" -> {
                         return this.aboutCommandHandler.onTabComplete(sender, command, alias, args);
+                    }
+                    case "add", "addbal", "addbalance" -> {
+                        return this.addCommandHandler.onTabComplete(sender, command, alias, args);
                     }
                     case "bal", "balance" -> {
                         return this.balanceCommandHandler.onTabComplete(sender, command, alias, args);

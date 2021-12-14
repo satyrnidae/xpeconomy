@@ -1,5 +1,14 @@
 command.about.result=§e{0}\nVersion: §a{1}\nAuthors: {2}
 
+command.balance.add.amount.missing=§cYou must specify an amount to add.
+command.balance.add.amount.invalid=§cThe amount §e{0}§c is not a valid amount.
+command.balance.add.player.missing=§cThe console must specify a player to use.
+command.balance.add.permission=§cYou don't have permission to add balances.
+command.balance.add.permission.exempt=§cYou don't have permission to add balances to §e{0}''s§c account.
+command.balance.add.permission.others=§cYou don't have permission to add balances to others'' accounts.
+command.balance.add.result=Added §e{0}§r to your balance. Your balance is now §a{1}§r.
+command.balance.add.result=Added §e{0}§r to §e{1}§r''s balance. {1}''s balance is now §a{2}§r.
+
 command.balance.permission.exempt=§cYou don''t have permission to check §e{0}''s§c balance.
 command.balance.permission.others=§cYou don''t have permission to check others'' balance.
 command.balance.permission=§cYou don''t have permission to check balances.
