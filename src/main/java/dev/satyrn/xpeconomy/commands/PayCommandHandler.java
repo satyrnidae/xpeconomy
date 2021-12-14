@@ -7,6 +7,7 @@ import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -72,8 +73,9 @@ public final class PayCommandHandler extends CommandHandler {
                 final BigDecimal payment = this.economyMethod.scale(BigDecimal.valueOf(
                         Double.parseDouble(args[isSubCommand ? 2 : 1])));
                 final String targetName = args[isSubCommand ? 1 : 0];
-                final Optional<Entity> result = Commands.getTarget(targetName);
-                if (result.isPresent() && result.get() instanceof Player target) {
+                final Optional<OfflinePlayer> result = Commands.getPlayer(targetName);
+                if (result.isPresent()) {
+                    final OfflinePlayer target = result.get();
                     final UUID senderId = ((Player)sender).getUniqueId();
                     if (target.getUniqueId() != senderId) {
                         Account senderAccount = this.accountManager.getAccount(senderId);
