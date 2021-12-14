@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,6 @@ public final class AboutCommandHandler extends CommandHandler {
             }
             authorsStringBuilder.append(authors.get(index));
         }
-
 
         sender.sendMessage(I18n.tr("command.about.result", description.getName(), description.getVersion(), authorsStringBuilder.toString()));
         return true;
