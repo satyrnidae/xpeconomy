@@ -10,10 +10,10 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,89 +59,78 @@ public final class BalanceCommandHandler extends CommandHandler {
     @Override
     public boolean onCommand(final @NotNull CommandSender sender, final @NotNull Command command,
                              final @NotNull String label, final @NotNull String[] args) {
-        // args is either [balance, player] or [player]
+        // args is either [0: balance, 1: player] or [0: player]
         final boolean isSubCommand = "xpeconomy".equalsIgnoreCase(command.getName());
-        final int playerArgument = isSubCommand ? 1 : 0;
+        final int playerArgIndex = isSubCommand ? 1 : 0;
 
-        // args length must be between 0 and 1 for the command / subcommand.
-        if (args.length < (isSubCommand ? 1 : 0)
-                || args.length > (isSubCommand ? 2 : 1)) {
+        final Permission permission = this.getPermission();
+
+        if (sender instanceof Player &&
+                !permission.has(sender, "xpeconomy.balance")) {
+            sender.sendMessage(I18n.tr("command.balance.permission"));
+            return true;
+        }
+
+        if (args.length > playerArgIndex + 1) {
             sender.sendMessage(I18n.tr("command.generic.usage", this.getUsage(sender, command)));
-        } else if (sender instanceof final Player player) {
-            // Sender is a player
-            if (this.getPermission().has(sender, "xpeconomy.balance")) {
-                // Sender specified a target
-                if (args.length == playerArgument + 1) {
-                    final Optional<OfflinePlayer> result = Commands.getPlayer(args[playerArgument]);
-                    if (result.isPresent()) {
-                        final OfflinePlayer target = result.get();
-                        if (target.getUniqueId() == player.getUniqueId()) {
-                            // Player targeted themselves.
-                            final Account playerAccount = this.accountManager.getAccount(player.getUniqueId());
-                            if (playerAccount == null) {
-                                sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
-                            } else {
-                                sender.sendMessage(I18n.tr("command.balance.result",
-                                        this.economyMethod.toString(playerAccount.getBalance(), true)));
-                            }
-                        } else {
-                            // Player target found, check permissions
-                            if (!this.getPermission().has(player, "xpeconomy.balance.others")) {
-                                // Player cannot check others' account balance.
-                                sender.sendMessage(I18n.tr("command.balance.permission.others"));
-                            } else if (this.getPermission().has(target.getPlayer(), "xpeconomy.balance.exempt") &&
-                                    !this.getPermission().has(player, "xpeconomy.balance.exempt.bypass")) {
-                                // Player cannot bypass exempt status
-                                sender.sendMessage(I18n.tr("command.balance.permission.exempt", target.getName()));
-                            } else {
-                                final Account targetAccount = this.accountManager.getAccount(target.getUniqueId());
-                                if (targetAccount == null) {
-                                    // Target does not have an active account.
-                                    sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account",
-                                            target.getName()));
-                                } else {
-                                    sender.sendMessage(I18n.tr("command.balance.result.others", target.getName(),
-                                            this.economyMethod.toString(targetAccount.getBalance(), true)));
-                                }
-                            }
-                        }
-                    } else {
-                        sender.sendMessage(I18n.tr("command.generic.invalid_target", args[playerArgument]));
-                    }
-                } else {
-                    // No target specified, use self.
-                    final Account playerAccount = this.accountManager.getAccount(player.getUniqueId());
-                    if (playerAccount == null) {
-                        sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
-                    } else {
-                        sender.sendMessage(I18n.tr("command.balance.result",
-                                this.economyMethod.toString(playerAccount.getBalance(), true)));
-                    }
-                }
+            return true;
+        }
+
+        final OfflinePlayer target;
+
+        if (args.length < playerArgIndex + 1) {
+            if (sender instanceof final Player player) {
+                target = player;
             } else {
-                sender.sendMessage(I18n.tr("command.balance.permission"));
+                sender.sendMessage(I18n.tr("command.balance.parameter.player.missing"));
+                return true;
             }
         } else {
-            // Sender is something else so require the Player argument.
-            if (args.length != playerArgument + 1) {
-                sender.sendMessage("command.generic.invalid_sender.non_player");
-            } else {
-                final Optional<OfflinePlayer> result = Commands.getPlayer(args[playerArgument]);
-                if (result.isPresent()) {
-                    final OfflinePlayer target = result.get();
-                    final Account targetAccount = this.accountManager.getAccount(target.getUniqueId());
-                    if (targetAccount == null) {
-                        // Target does not have an active account.
-                        sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
-                    } else {
-                        sender.sendMessage(I18n.tr("command.balance.result.others", target.getName(),
-                                this.economyMethod.toString(targetAccount.getBalance(), true)));
-                    }
-                } else {
-                    sender.sendMessage(I18n.tr("command.generic.invalid_target", args[playerArgument]));
+            final String playerArg = args[playerArgIndex];
+            final Optional<OfflinePlayer> result = Commands.getPlayer(playerArg);
+            if (result.isEmpty()) {
+                sender.sendMessage(I18n.tr("command.generic.invalid_target", playerArg));
+                return true;
+            }
+            target = result.get();
+
+            if (sender instanceof final Player player
+                    && player.getUniqueId() != target.getUniqueId()) {
+                if (!permission.has(sender, "xpeconomy.balance.others")) {
+                    sender.sendMessage(I18n.tr("command.balance.permission.others"));
+                    return true;
+                }
+
+                if (permission.has(target.getPlayer(), "xpeconomy.balance.exempt")
+                        && !permission.has(sender, "xpeconomy.balance.exempt.bypass")) {
+                    sender.sendMessage(I18n.tr("command.balance.permission.exempt", target.getName()));
+                    return true;
                 }
             }
+
+            final Account account = this.accountManager.getAccount(target.getUniqueId());
+            if (account == null) {
+                if (sender instanceof final Player player
+                        && player.getUniqueId() == target.getUniqueId()) {
+                    sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+                } else {
+                    sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
+                }
+                return true;
+            }
+
+            final BigDecimal amount = account.getBalance();
+
+            if (sender instanceof final Player player
+                    && player.getUniqueId() == target.getUniqueId()) {
+                sender.sendMessage(I18n.tr("command.balance.result", this.economyMethod.toString(amount, true)));
+            } else {
+                sender.sendMessage(I18n.tr("command.balance.result.others",
+                        target.getName(),
+                        this.economyMethod.toString(amount, true)));
+            }
         }
+
         return true;
     }
 
@@ -163,6 +152,8 @@ public final class BalanceCommandHandler extends CommandHandler {
         final int playerArgumentIndex = "xpeconomy".equalsIgnoreCase(command.getName()) ? 2 : 1;
         final List<String> completionOptions = new ArrayList<>();
 
+        final Permission permission = this.getPermission();
+
         if (args.length == playerArgumentIndex) {
             if (sender instanceof final Player player) {
                 if (this.getPermission().has(player, "xpeconomy.balance")) {
@@ -181,16 +172,16 @@ public final class BalanceCommandHandler extends CommandHandler {
     }
 
     @Override
-    protected final @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
+    protected @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
         if ("xpeconomy".equalsIgnoreCase(command.getName())) {
             if (sender instanceof Player) {
-                return "/xpeconomy balance [player]";
+                return I18n.tr("command.balance.usage.subcommand");
             }
-            return "/xpeconomy balance player";
+            return I18n.tr("command.balance.usage.subcommand.console");
         }
         if (sender instanceof Player) {
-            return "/balance [player]";
+            return I18n.tr("command.balance.usage");
         }
-        return "/balance player";
+        return I18n.tr("command.balance.usage.console");
     }
 }

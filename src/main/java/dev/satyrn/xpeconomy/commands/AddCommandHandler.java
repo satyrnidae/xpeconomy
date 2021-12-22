@@ -70,7 +70,7 @@ public final class AddCommandHandler extends CommandHandler {
         }
 
         if (args.length < amountArgIndex + 1) {
-            sender.sendMessage(I18n.tr("command.balance.add.amount.missing"));
+            sender.sendMessage(I18n.tr("command.balance.add.parameter.amount.missing"));
             return true;
         }
 
@@ -79,7 +79,7 @@ public final class AddCommandHandler extends CommandHandler {
             final double amountArg = Double.parseDouble(args[amountArgIndex]);
             amount = BigDecimal.valueOf(amountArg).setScale(this.economyMethod.getScale(), RoundingMode.DOWN);
         } catch (NumberFormatException ex) {
-            sender.sendMessage(I18n.tr("command.balance.add.amount.invalid", args[amountArgIndex]));
+            sender.sendMessage(I18n.tr("command.balance.add.parameter.amount.invalid", args[amountArgIndex]));
             return true;
         }
 
@@ -89,7 +89,7 @@ public final class AddCommandHandler extends CommandHandler {
             if (sender instanceof Player player) {
                 target = player;
             } else {
-                sender.sendMessage(I18n.tr("command.balance.add.player.missing"));
+                sender.sendMessage(I18n.tr("command.balance.add.parameter.player.missing"));
                 return true;
             }
         } else {
@@ -117,8 +117,13 @@ public final class AddCommandHandler extends CommandHandler {
 
         final Account account = this.accountManager.getAccount(target.getUniqueId());
         if (account == null) {
-            sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
-            return false;
+            if (sender instanceof final Player player
+                    && player.getUniqueId() == target.getUniqueId()) {
+                sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+            } else {
+                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
+            }
+            return true;
         }
 
         account.deposit(amount);
