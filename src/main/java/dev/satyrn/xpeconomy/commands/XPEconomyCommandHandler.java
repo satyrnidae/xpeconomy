@@ -20,6 +20,7 @@ public final class XPEconomyCommandHandler extends CommandHandler {
     private final @NotNull CommandHandler aboutCommandHandler;
     private final @NotNull CommandHandler addCommandHandler;
     private final @NotNull CommandHandler balanceCommandHandler;
+    private final @NotNull CommandHandler deductCommandHandler;
     private final @NotNull CommandHandler experienceCommandHandler;
     private final @NotNull CommandHandler payCommandHandler;
 
@@ -31,12 +32,14 @@ public final class XPEconomyCommandHandler extends CommandHandler {
                                    final @NotNull CommandHandler aboutCommandHandler,
                                    final @NotNull CommandHandler addCommandHandler,
                                    final @NotNull CommandHandler balanceCommandHandler,
+                                   final @NotNull CommandHandler deductCommandHandler,
                                    final @NotNull CommandHandler experienceCommandHandler,
                                    final @NotNull CommandHandler payCommandHandler) {
         super(permission);
         this.aboutCommandHandler = aboutCommandHandler;
         this.addCommandHandler = addCommandHandler;
         this.balanceCommandHandler = balanceCommandHandler;
+        this.deductCommandHandler = deductCommandHandler;
         this.experienceCommandHandler = experienceCommandHandler;
         this.payCommandHandler = payCommandHandler;
     }
@@ -66,6 +69,9 @@ public final class XPEconomyCommandHandler extends CommandHandler {
             }
             case "bal", "balance" -> {
                 return this.balanceCommandHandler.onCommand(sender, command, label, args);
+            }
+            case "deduct", "deductbal", "deductbalance", "remove", "removebal", "removebalance" -> {
+                return this.deductCommandHandler.onCommand(sender, command, label, args);
             }
             case "deposit", "pay" -> {
                 return this.payCommandHandler.onCommand(sender, command, label, args);
@@ -117,6 +123,9 @@ public final class XPEconomyCommandHandler extends CommandHandler {
                     }
                     case "bal", "balance" -> {
                         return this.balanceCommandHandler.onTabComplete(sender, command, alias, args);
+                    }
+                    case "deduct", "deductbal", "deductbalance", "remove", "removebal", "removebalance" -> {
+                        return this.deductCommandHandler.onTabComplete(sender, command, alias, args);
                     }
                     case "deposit", "pay" -> {
                         return this.payCommandHandler.onTabComplete(sender, command, alias, args);

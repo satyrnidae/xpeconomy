@@ -1,19 +1,41 @@
 command.about.result=§e{0}\nVersion: §a{1}\nAuthors: {2}
 
-command.balance.add.amount.missing=§cYou must specify an amount to add.
-command.balance.add.amount.invalid=§cThe amount §e{0}§c is not a valid amount.
-command.balance.add.player.missing=§cThe console must specify a player to use.
-command.balance.add.permission=§cYou don't have permission to add balances.
-command.balance.add.permission.exempt=§cYou don't have permission to add balances to §e{0}''s§c account.
-command.balance.add.permission.others=§cYou don't have permission to add balances to others'' accounts.
-command.balance.add.result=Added §e{0}§r to your balance. Your balance is now §a{1}§r.
-command.balance.add.result=Added §e{0}§r to §e{1}§r''s balance. {1}''s balance is now §a{2}§r.
+command.balance.add.parameter.amount.missing=§cYou must specify an amount to add.
+command.balance.add.parameter.amount.invalid=§cThe amount §e{0}§c is not a valid amount.
+command.balance.add.parameter.player.missing=§cThe console must specify a player to add account balances.
+command.balance.add.permission=§cYou don't have permission to add balance.
+command.balance.add.permission.exempt=§cYou don't have permission to add balance to §e{0}''s§c account.
+command.balance.add.permission.others=§cYou don't have permission to add balance to others'' accounts.
+command.balance.add.result=Added §e{0}§r to your balance. Your balance is now §e{1}§r.
+command.balance.add.result.others=Added §e{0}§r to §e{1}§r''s balance. {1}''s balance is now §e{2}§r.
+command.balance.add.usage=§e/add §o§dAMOUNT§r§e [§o§dPLAYER§r§e]§r
+command.balance.add.usage.console=§e/add§o§dAMOUNT PLAYER§r
+command.balance.add.usage.subcommand=§e/xpeconomy add §o§dAMOUNT§r§e [§o§dPLAYER§r§e]§r
+command.balance.add.usage.subcommand.console=§e/xpeconomy add §o§dAMOUNT PLAYER§r
 
-command.balance.permission.exempt=§cYou don''t have permission to check §e{0}''s§c balance.
-command.balance.permission.others=§cYou don''t have permission to check others'' balance.
+command.balance.deduct.parameter.amount.invalid=§cThe amound §e{0}§c is not a valid amount to deduct.
+command.balance.deduct.parameter.amount.missing=§cYou must specify an amount to deduct.
+command.balance.deduct.parameter.player.missing=§cThe console must specify a player to deduct account balances.
+command.balance.deduct.permission=§cYou don't have permission to deduct balance.
+command.balance.deduct.permission.exempt=§cYou don't have permission to deduct balance from §e{0}''s§c account.
+command.balance.deduct.permission.others=§cYou don't have permission to deduct balance from others'' account.
+command.balance.deduct.result=Deducted §e{0}§r from your balance. Your balance is now §e{1}§r.
+command.balance.deduct.result.others=Deducted §e{0}§r from §e{1}§r''s balance. {1}''s balance is now §e{2}§r.
+command.balance.deduct.usage=§e/deduct §o§dAMOUNT§r§e [§o§dPLAYER§r§e]§r
+command.balance.deduct.usage.console=§e/deduct §o§dAMOUNT PLAYER§r
+command.balance.deduct.usage.subcommand=§e/xpeconomy deduct §o§dAMOUNT§r§e [§o§dPLAYER§r§e]§r
+command.balance.deduct.usage.subcommand.console=§e/xpeconomy deduct §o§dAMOUNT PLAYER§r
+
+command.balance.parameter.player.missing=§cThe console must specify a player to check balances.
 command.balance.permission=§cYou don''t have permission to check balances.
+command.balance.permission.exempt=§cYou don''t have permission to check §e{0}''s§c balance.
+command.balance.permission.others=§cYou don''t have permission to check others'' account balance.
 command.balance.result.others=§e{0}''s§r account balance is §e{1}§r.
 command.balance.result=Your account balance is §e{0}§r.
+command.balance.usage=§e/balance [§o§dPLAYER§r§e]§r
+command.balance.usage.console=§e/balance §o§dPLAYER§r
+command.balance.usage.subcommand=§e/xpeconomy balance [§o§dPLAYER§r§e]§r
+command.balance.usage.subcommand.console=§e/xpeconomy balance §o§dPLAYER§r
 
 command.experience.permission.exempt=§cYou don''t have permission to check §e{0}''s§c experience.
 command.experience.permission.others=§cYou don''t have permission to check others'' experience.

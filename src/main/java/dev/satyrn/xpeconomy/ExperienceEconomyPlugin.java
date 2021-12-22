@@ -95,6 +95,8 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
                 configuration.economyMethod.value()).setupCommand(this, "addbalance");
         final CommandHandler balanceCommandHandler = new BalanceCommandHandler(accountManager, permissionProvider,
                 configuration.economyMethod.value()).setupCommand(this, "balance");
+        final CommandHandler deductCommandHandler = new DeductCommandHandler(permissionProvider, accountManager,
+                configuration.economyMethod.value()).setupCommand(this, "deductbalance");
         final CommandHandler experienceCommandHandler = new ExperienceCommandHandler(permissionProvider, accountManager,
                 configuration.economyMethod.value()).setupCommand(this, "experience");
         final CommandHandler payCommandHandler = new PayCommandHandler(accountManager, permissionProvider,
@@ -104,6 +106,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
                 aboutCommandHandler,
                 addCommandHandler,
                 balanceCommandHandler,
+                deductCommandHandler,
                 experienceCommandHandler,
                 payCommandHandler)
             .setupCommand(this, "xpeconomy");

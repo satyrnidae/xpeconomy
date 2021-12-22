@@ -9,16 +9,26 @@ authors: [ saturniidae ]
 description: No more fiat currencies! Tie your economy directly to your XP levels!
 website: https://satyrn.dev/
 commands:
-  addbalance:
+  add:
     description: Adds an amount to a player's balance
     usage: /<command> §o§dAMOUNT§r [§o§dPLAYER§r]
     aliases:
+      - addbalance
       - addbal
   balance:
     description: Displays a user's account balance
     usage: /<command> [§o§dPLAYER§r]
     aliases:
       - bal
+  deduct:
+    description: Deducts a given amount from a player's balance
+    usage: /<command> §o§dAMOUNT§r [§o§dPLAYER§r]
+    aliases:
+      - remove
+      - removebal
+      - removebalance
+      - deductbal
+      - deductbalance
   experience:
     description: Queries a player's experience balance
     usage: /<command> [§o§dPLAYER§r]
@@ -90,24 +100,24 @@ permissions:
   xpeconomy.balance.others:
     default: op
     description: Allows a user to check another user's account balance
-  xpeconomy.balance.remove:
+  xpeconomy.balance.deduct:
     default: op
     description: Allows a player to remove an amount from an account
-  xpeconomy.balance.remove.*:
+  xpeconomy.balance.deduct.*:
     default: false
     description: Grants a user all removal permissions
     children:
-      xpeconomy.balance.remove: true
-      xpeconomy.balance.remove.exempt: true
-      xpeconomy.balance.remove.exempt.bypass: true
-      xpeconomy.balance.remove.others: true
-  xpeconomy.balance.remove.exempt:
+      xpeconomy.balance.deduct: true
+      xpeconomy.balance.deduct.exempt: true
+      xpeconomy.balance.deduct.exempt.bypass: true
+      xpeconomy.balance.deduct.others: true
+  xpeconomy.balance.deduct.exempt:
     default: false
     description: Prevents a user's account from being altered by the remove command
-  xpeconomy.balance.remove.exempt.bypass:
+  xpeconomy.balance.deduct.exempt.bypass:
     default: false
     description: Allows a user to bypass another user's exemption status for the remove command
-  xpeconomy.balance.remove.others:
+  xpeconomy.balance.deduct.others:
     default: op
     description: Allows a user to remove an amount from another user's account
   xpeconomy.balance.set:
