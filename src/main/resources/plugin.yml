@@ -5,24 +5,24 @@ api-version: 1.17
 prefix: xpeconomy
 softdepend: [ Vault ]
 loadBefore: [ Essentials ]
-authors: [ saturniidae ]
+authors: [ satyrnidae ]
 description: No more fiat currencies! Tie your economy directly to your XP levels!
 website: https://satyrn.dev/
 commands:
   add:
     description: Adds an amount to a player's balance
-    usage: /<command> §o§dAMOUNT§r [§o§dPLAYER§r]
+    usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
     aliases:
       - addbalance
       - addbal
   balance:
     description: Displays a user's account balance
-    usage: /<command> [§o§dPLAYER§r]
+    usage: /<command> [§d§oPLAYER§r]
     aliases:
       - bal
   deduct:
     description: Deducts a given amount from a player's balance
-    usage: /<command> §o§dAMOUNT§r [§o§dPLAYER§r]
+    usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
     aliases:
       - remove
       - removebal
@@ -31,18 +31,29 @@ commands:
       - deductbalance
   experience:
     description: Queries a player's experience balance
-    usage: /<command> [§o§dPLAYER§r]
+    usage: /<command> [§d§oPLAYER§r]
     aliases:
       - exp
       - xp
   pay:
     description: Pays another player an amount from the sender's balance. Cannot be executed via console
-    usage: /<command> §o§dPLAYER§r §o§dAMOUNT§r
+    usage: /<command> §d§oPLAYER§r §d§oAMOUNT§r
     aliases:
       - deposit
+  setbalance:
+    description: Sets a player's account balance to a desired value.
+    usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
+    aliases:
+      - setbal
+  syncxp:
+    description: Synchronizes a player's account balance with their XP level
+    usage: /<command> [§d§oPLAYER§r]
+  transfer:
+    description: Transfers balances from one player to another.
+    usage: /<command> §d§oAMOUNT PLAYER RECIPIENT§r
   xpeconomy:
     description: Performs various tasks for the xpeconomy plugin
-    usage: /<command> {about|add|balance|experience|help|pay|remove|set|sync|transfer|withdraw} [§o§ARGS§r...]
+    usage: /<command> {about|add|balance|experience|help|pay|remove|set|sync|transfer|withdraw} [§d§oARGS§r...]
     aliases:
       - xpe
       - xpeco
@@ -69,7 +80,6 @@ permissions:
       xpeconomy.balance.remove.*: true
       xpeconomy.balance.set.*: true
       xpeconomy.balance.sync.*: true
-      xpeconomy.balance.take.*: true
       xpeconomy.balance.transfer.*: true
   xpeconomy.balance.add:
     default: op
@@ -152,22 +162,6 @@ permissions:
   xpeconomy.balance.sync.others:
     default: op
     description: Allows a user to sync another user's balance
-  xpeconomy.balance.take:
-    default: op
-    description: Allows a user to take an amount from another's account
-  xpeconomy.balance.take.*:
-    default: false
-    description: Grants all take permissions
-    children:
-      xpeconomy.balance.take: true
-      xpeconomy.balance.take.exempt: true
-      xpeconomy.balance.take.exempt.bypass: true
-  xpeconomy.balance.take.exempt:
-    default: false
-    description: Prevents a user from having money taken from their account via the take command
-  xpeconomy.balance.take.exempt.bypass:
-    default: false
-    description: Allows a user to take money from exempt accounts
   xpeconomy.balance.transfer:
     default: op
     description: Allows a user to force a transfer between two accounts
