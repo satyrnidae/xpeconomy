@@ -98,16 +98,18 @@ public enum EconomyMethod {
         }
         final DecimalFormat formatter = new DecimalFormat(pattern.toString());
 
-        final StringBuilder stringValue = new StringBuilder(formatter.format(value));
+        String stringValue = formatter.format(value);
         if (includeCurrencyName) {
-            stringValue.append(" ");
+            final String currencyName;
             if (value.compareTo(BigDecimal.ONE) == 0) {
-                stringValue.append(this.getCurrencyName());
+                currencyName = this.getCurrencyName();
+
             } else {
-                stringValue.append(this.getCurrencyNamePlural());
+                currencyName = this.getCurrencyNamePlural();
             }
+            stringValue = I18n.tr(this.economyNameKey + ".format", stringValue, currencyName);
         }
-        return stringValue.toString();
+        return stringValue;
     }
 
     public @NotNull String getCurrencyName() {
