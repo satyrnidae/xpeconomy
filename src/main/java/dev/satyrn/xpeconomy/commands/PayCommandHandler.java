@@ -10,7 +10,6 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -140,41 +139,11 @@ public final class PayCommandHandler extends CommandHandler {
         return completionOptions;
     }
 
-    /**
-     * Gets the value of the target argument as a string.
-     * @param command The command which was executed.
-     * @param args The command arguments.
-     * @return The string value of the first argument of the command or subcommand.
-     */
-    private @Nullable String getTarget(@NotNull Command command, @NotNull String[] args) {
-        final int argumentIndex = "xpeconomy".equalsIgnoreCase(command.getName()) ? 2 : 1;
-
-        if (args.length > argumentIndex) {
-            return args[argumentIndex];
-        }
-        return null;
-    }
-
-    /**
-     * Gets the value of the target argument as a string.
-     * @param command The command which was executed.
-     * @param args The command arguments.
-     * @return The string value of the second argument of the command or subcommand.
-     */
-    private @Nullable String getAmount(@NotNull Command command, @NotNull String[] args) {
-        final int argumentIndex = "xpeconomy".equalsIgnoreCase(command.getName()) ? 3 : 2;
-
-        if (args.length > argumentIndex) {
-            return args[argumentIndex];
-        }
-        return null;
-    }
-
     @Override
-    protected final @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
+    protected @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
         if ("xpeconomy".equalsIgnoreCase(command.getName())) {
-            return "/xpeconomy pay player amount";
+            return I18n.tr("command.pay.usage.subcommand");
         }
-        return "/pay player amount";
+        return I18n.tr("command.pay.usage");
     }
 }
