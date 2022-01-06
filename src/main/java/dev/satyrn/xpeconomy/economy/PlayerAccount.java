@@ -162,13 +162,13 @@ public final class PlayerAccount implements Account {
      * @param value The account to withdraw.
      */
     @Override
-    public void withdraw(final @NotNull BigDecimal value) {
+    public boolean withdraw(final @NotNull BigDecimal value) {
         if (value.compareTo(BigDecimal.ZERO) < 0 || !this.has(value)) {
-            return;
+            return false;
         }
 
         this.addBalance(value.negate(), true);
-
+        return true;
     }
 
     /**
@@ -177,13 +177,13 @@ public final class PlayerAccount implements Account {
      * @param value The amount to deposit.
      */
     @Override
-    public void deposit(final @NotNull BigDecimal value) {
+    public boolean deposit(final @NotNull BigDecimal value) {
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            return;
+            return false;
         }
 
         this.addBalance(value, true);
-
+        return true;
     }
 
     /**

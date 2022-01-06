@@ -77,12 +77,12 @@ public interface Account {
      *
      * @param value The account to withdraw.
      */
-    void withdraw(final @NotNull BigDecimal value);
+    boolean withdraw(final @NotNull BigDecimal value);
 
     /**
      * Deposits a given amount into the account.
      *
      * @param value The amount to deposit.
      */
-    void deposit(final @NotNull BigDecimal value);
+    boolean deposit(final @NotNull BigDecimal value);
 }
