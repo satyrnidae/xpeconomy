@@ -2,7 +2,7 @@ package dev.satyrn.xpeconomy.economy;
 
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
-import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import org.bukkit.OfflinePlayer;
@@ -37,7 +37,7 @@ public abstract class AccountManagerBase implements AccountManager {
      *
      * @param configuration The configuration manager.
      */
-    protected AccountManagerBase(final ExperienceEconomyConfiguration configuration) {
+    protected AccountManagerBase(final Configuration configuration) {
         this.economyMethod = configuration.economyMethod.value();
         this.startingBalance = configuration.startingValue.value();
     }

@@ -2,12 +2,14 @@ package dev.satyrn.xpeconomy.commands;
 
 import dev.satyrn.xpeconomy.api.commands.CommandHandler;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
 import net.milkbowl.vault.permission.Permission;
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,25 +25,39 @@ public final class XPEconomyCommandHandler extends CommandHandler {
     private final @NotNull CommandHandler deductCommandHandler;
     private final @NotNull CommandHandler experienceCommandHandler;
     private final @NotNull CommandHandler payCommandHandler;
+    private final @NotNull CommandHandler setCommandHandler;
+    private final @NotNull CommandHandler syncCommandHandler;
+    private final @NotNull CommandHandler transferCommandHandler;
+    private final @NotNull CommandHandler helpCommandHandler;
+    private final @NotNull JavaPlugin plugin;
 
     /**
      * Creates a new command executor.
      * @param permission The permission manager instance.
      */
     public XPEconomyCommandHandler(final @NotNull Permission permission,
+                                   final @NotNull JavaPlugin plugin,
                                    final @NotNull CommandHandler aboutCommandHandler,
                                    final @NotNull CommandHandler addCommandHandler,
                                    final @NotNull CommandHandler balanceCommandHandler,
                                    final @NotNull CommandHandler deductCommandHandler,
                                    final @NotNull CommandHandler experienceCommandHandler,
-                                   final @NotNull CommandHandler payCommandHandler) {
+                                   final @NotNull CommandHandler payCommandHandler,
+                                   final @NotNull CommandHandler setCommandHandler,
+                                   final @NotNull CommandHandler syncCommandHandler,
+                                   final @NotNull CommandHandler transferCommandHandler) {
         super(permission);
+        this.plugin = plugin;
         this.aboutCommandHandler = aboutCommandHandler;
         this.addCommandHandler = addCommandHandler;
         this.balanceCommandHandler = balanceCommandHandler;
         this.deductCommandHandler = deductCommandHandler;
         this.experienceCommandHandler = experienceCommandHandler;
         this.payCommandHandler = payCommandHandler;
+        this.setCommandHandler = setCommandHandler;
+        this.syncCommandHandler = syncCommandHandler;
+        this.transferCommandHandler = transferCommandHandler;
+        this.helpCommandHandler = new HelpCommandHandler(permission, plugin);
     }
 
     /**
@@ -79,7 +95,23 @@ public final class XPEconomyCommandHandler extends CommandHandler {
             case "exp", "experience", "xp" -> {
                 return this.experienceCommandHandler.onCommand(sender, command, label, args);
             }
+            case "help" -> {
+                return this.helpCommandHandler.onCommand(sender, command, label, args);
+            }
+            case "set", "setbal", "setbalance" -> {
+                return this.setCommandHandler.onCommand(sender, command, label, args);
+            }
+            case "sync", "syncxp" -> {
+                return this.syncCommandHandler.onCommand(sender, command, label, args);
+            }
+            case "transfer" -> {
+                return this.transferCommandHandler.onCommand(sender, command, label, args);
+            }
         }
+        sender.sendMessage(I18n.tr("command.xpeconomy.result",
+                this.plugin.getDescription().getName(),
+                this.plugin.getDescription().getVersion(),
+                String.join(", ", this.plugin.getDescription().getAuthors())));
         return true;
     }
 
@@ -103,14 +135,30 @@ public final class XPEconomyCommandHandler extends CommandHandler {
             if (args.length == 1) {
                 completionOptions.add("about");
 
-                if (this.getPermission().has(sender, "xpeconomy.balance")) {
+                if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.add")) {
+                    completionOptions.add("add");
+                }
+                if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance")) {
                     completionOptions.add("balance");
                 }
-                if (this.getPermission().has(sender, "xpeconomy.experience")) {
+                if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.deduct")) {
+                    completionOptions.add("deduct");
+                }
+                if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.experience")) {
                     completionOptions.add("experience");
                 }
-                if (sender instanceof Player && this.getPermission().has(sender, "xpeconomy.pay")) {
+                completionOptions.add("help");
+                if (sender instanceof Player || this.getPermission().has(sender, "xpeconomy.pay")) {
                     completionOptions.add("pay");
+                }
+                if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.set")) {
+                    completionOptions.add("set");
+                }
+                if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.sync")) {
+                    completionOptions.add("sync");
+                }
+                if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.transfer")) {
+                    completionOptions.add("transfer");
                 }
             } else if (args.length > 1) {
                 final String commandName = args[0].toLowerCase(Locale.ROOT);
@@ -132,6 +180,18 @@ public final class XPEconomyCommandHandler extends CommandHandler {
                     }
                     case "exp", "experience", "xp" -> {
                         return this.experienceCommandHandler.onTabComplete(sender, command, alias, args);
+                    }
+                    case "help" -> {
+                        return this.helpCommandHandler.onTabComplete(sender, command, alias, args);
+                    }
+                    case "set", "setbal", "setbalance" -> {
+                        return this.setCommandHandler.onTabComplete(sender, command, alias, args);
+                    }
+                    case "sync", "syncxp" -> {
+                        return this.syncCommandHandler.onTabComplete(sender, command, alias, args);
+                    }
+                    case "transfer" -> {
+                        return this.transferCommandHandler.onTabComplete(sender, command, alias, args);
                     }
                     default -> {
                         return new ArrayList<>();

@@ -3,7 +3,7 @@ package dev.satyrn.xpeconomy.economy;
 import com.google.common.collect.ImmutableList;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
-import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.economy.Economy;
@@ -41,7 +41,7 @@ public final class ExperienceEconomy implements Economy {
      * @param accountManager The account manager instance.
      */
     public ExperienceEconomy(final Plugin plugin, final AccountManager accountManager,
-                             final ExperienceEconomyConfiguration configuration) {
+                             final Configuration configuration) {
         this.plugin = plugin;
         this.accountManager = accountManager;
         this.economyMethod = configuration.economyMethod.value();

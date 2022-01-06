@@ -1,7 +1,7 @@
 package dev.satyrn.xpeconomy.economy;
 
 import dev.satyrn.xpeconomy.api.storage.ConnectionManager;
-import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +22,7 @@ public final class MySQLAccountManager extends AccountManagerBase {
      * The connection manager.
      */
     private final transient ConnectionManager connectionManager;
-    private final transient ExperienceEconomyConfiguration configuration;
+    private final transient Configuration configuration;
 
     /**
      * Creates a new account manager with a MySQL backend.
@@ -31,7 +31,7 @@ public final class MySQLAccountManager extends AccountManagerBase {
      * @param configuration     The configuration instance.
      * @param connectionManager The connection manager.
      */
-    public MySQLAccountManager(final ExperienceEconomyConfiguration configuration, final Plugin plugin,
+    public MySQLAccountManager(final Configuration configuration, final Plugin plugin,
                                final ConnectionManager connectionManager) {
         super(configuration);
         this.plugin = plugin;

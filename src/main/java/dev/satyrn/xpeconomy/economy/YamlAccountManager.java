@@ -1,6 +1,6 @@
 package dev.satyrn.xpeconomy.economy;
 
-import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -29,7 +29,7 @@ public final class YamlAccountManager extends AccountManagerBase {
      *
      * @param plugin The plugin instance.
      */
-    public YamlAccountManager(final ExperienceEconomyConfiguration configuration, final Plugin plugin) {
+    public YamlAccountManager(final Configuration configuration, final Plugin plugin) {
         super(configuration);
         this.plugin = plugin;
     }

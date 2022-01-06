@@ -3,7 +3,7 @@ package dev.satyrn.xpeconomy;
 import dev.satyrn.xpeconomy.api.commands.CommandHandler;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.commands.*;
-import dev.satyrn.xpeconomy.configuration.ExperienceEconomyConfiguration;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.economy.ExperienceEconomy;
 import dev.satyrn.xpeconomy.economy.MySQLAccountManager;
 import dev.satyrn.xpeconomy.economy.YamlAccountManager;
@@ -50,7 +50,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
         this.saveResource("accounts.yml", false);
 
         // Initialize configuration handler.
-        final ExperienceEconomyConfiguration configuration = new ExperienceEconomyConfiguration(this);
+        final Configuration configuration = new Configuration(this);
 
         // Initialize internationalization backend.
         this.i18n = this.initializeI18n(configuration);
@@ -89,26 +89,36 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
      * @param permissionProvider The permission manager instance.
      */
     private void registerCommands (final AccountManager accountManager, final Permission permissionProvider,
-                                   final ExperienceEconomyConfiguration configuration) {
+                                   final Configuration configuration) {
         final CommandHandler aboutCommandHandler = new AboutCommandHandler(permissionProvider, this);
         final CommandHandler addCommandHandler = new AddCommandHandler(permissionProvider, accountManager,
-                configuration.economyMethod.value()).setupCommand(this, "addbalance");
+                configuration.economyMethod.value()).setupCommand(this, "add");
         final CommandHandler balanceCommandHandler = new BalanceCommandHandler(accountManager, permissionProvider,
                 configuration.economyMethod.value()).setupCommand(this, "balance");
         final CommandHandler deductCommandHandler = new DeductCommandHandler(permissionProvider, accountManager,
-                configuration.economyMethod.value()).setupCommand(this, "deductbalance");
+                configuration.economyMethod.value()).setupCommand(this, "deduct");
         final CommandHandler experienceCommandHandler = new ExperienceCommandHandler(permissionProvider, accountManager,
                 configuration.economyMethod.value()).setupCommand(this, "experience");
         final CommandHandler payCommandHandler = new PayCommandHandler(accountManager, permissionProvider,
                 configuration.economyMethod.value()).setupCommand(this, "pay");
+        final CommandHandler setCommandHandler = new SetCommandHandler(permissionProvider, accountManager, configuration.economyMethod.value())
+                .setupCommand(this, "setbalance");
+        final CommandHandler syncCommandHandler = new SyncCommandHandler(permissionProvider, accountManager, configuration.economyMethod.value())
+                .setupCommand(this, "syncxp");
+        final CommandHandler transferCommandHandler = new TransferCommandHandler(permissionProvider, accountManager, configuration.economyMethod.value())
+                .setupCommand(this, "transfer");
 
         new XPEconomyCommandHandler(permissionProvider,
+                this,
                 aboutCommandHandler,
                 addCommandHandler,
                 balanceCommandHandler,
                 deductCommandHandler,
                 experienceCommandHandler,
-                payCommandHandler)
+                payCommandHandler,
+                setCommandHandler,
+                syncCommandHandler,
+                transferCommandHandler)
             .setupCommand(this, "xpeconomy");
     }
 
@@ -123,7 +133,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
      *
      * @param configuration The configuration instance.
      */
-    private I18n initializeI18n(final ExperienceEconomyConfiguration configuration) {
+    private I18n initializeI18n(final Configuration configuration) {
         // Initialize internationalization handler.
         final I18n i18n = new I18n(this);
         i18n.setLocale(configuration.locale.value());
@@ -138,7 +148,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
      * @param configuration The configuration instance.
      * @return The account manager instance.
      */
-    private AccountManager initializeEconomy(ExperienceEconomyConfiguration configuration) {
+    private AccountManager initializeEconomy(Configuration configuration) {
         final AccountManager accountManager;
         if (configuration.mysql.enabled.value()) {
             final MySQLConnectionManager connection = new MySQLConnectionManager(configuration, this);
