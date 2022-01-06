@@ -6,7 +6,7 @@ No more fiat currencies!
 
 An accurate Experience Point-based economy system for Paper 1.18.1+!
 
-Tired of fiat currencies? Want your players to be able to get richer just by playing the game? XPEconomy might be for you!
+Tired of currencies that you have to use commands to check? Want your players to be able to get richer just by playing the game? Experience Economy might be for you!
 
 Key features:
 - Supports offline players
