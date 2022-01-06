@@ -1,6 +1,6 @@
 package dev.satyrn.xpeconomy.configuration;
 
-import dev.satyrn.xpeconomy.api.configuration.*;
+import dev.satyrn.papermc.api.configuration.v1.*;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +10,7 @@ import java.util.Locale;
 /**
  * Root configuration container for the Experience Economy mod.
  */
-public final class ExperienceEconomyConfiguration extends ConfigurationContainer {
+public final class Configuration extends ConfigurationContainer {
     /**
      * The MySQL connection settings configuration container.
      */
@@ -55,7 +55,7 @@ public final class ExperienceEconomyConfiguration extends ConfigurationContainer
      *
      * @param plugin The plugin instance.
      */
-    public ExperienceEconomyConfiguration(final Plugin plugin) {
+    public Configuration(final Plugin plugin) {
         super(plugin.getConfig());
     }
 

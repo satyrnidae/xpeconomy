@@ -40,10 +40,24 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <relocations>
                                 <relocation>
                                     <pattern>org.javatuples</pattern>
-                                    <shadedPattern>dev.satyrn.shaded.org.javatuples</shadedPattern>
+                                    <shadedPattern>dev.satyrn.xpeconomy.shaded.org.javatuples</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>dev.satyrn.papermc.api</pattern>
+                                    <shadedPattern>dev.satyrn.xpeconomy.api.common</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -119,6 +133,11 @@
             <artifactId>javatuples</artifactId>
             <version>1.2</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.satyrn</groupId>
+            <artifactId>papermc-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
