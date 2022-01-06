@@ -126,12 +126,31 @@ public final class DeductCommandHandler extends CommandHandler {
                     && player.getUniqueId() == target.getUniqueId()) {
                 sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account"));
+                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
             }
             return true;
         }
 
-        account.withdraw(amount);
+        if (amount.compareTo(account.getBalance()) > 0) {
+            if (sender instanceof final Player player
+                    && player.getUniqueId() == target.getUniqueId()) {
+                sender.sendMessage(I18n.tr("command.balance.deduct.failure.low_balance",
+                                this.economyMethod.toString(account.getBalance(), true),
+                                this.economyMethod.toString(amount, true)));
+            } else {
+                sender.sendMessage(I18n.tr("command.balance.deduct.failure.low_balance.others",
+                        target.getName(),
+                        this.economyMethod.toString(account.getBalance(), true),
+                        this.economyMethod.toString(amount, true)));
+            }
+            return true;
+        }
+
+        if (!account.withdraw(amount)) {
+            sender.sendMessage(I18n.tr("command.balance.deduct.failure"));
+            return true;
+        }
+
         if (sender instanceof final Player player
                 && player.getUniqueId() == target.getUniqueId()) {
             sender.sendMessage(I18n.tr("command.balance.deduct.result",
