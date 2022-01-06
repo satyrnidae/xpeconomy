@@ -188,13 +188,13 @@ public final class ExperienceCommandHandler extends CommandHandler {
     protected final @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
         if ("xpeconomy".equalsIgnoreCase(command.getName())) {
             if (sender instanceof Player) {
-                return "/xpeconomy experience [player]";
+                return I18n.tr("command.experience.usage.subcommand");
             }
-            return "/xpeconomy experience player";
+            return I18n.tr("command.experience.usage.subcommand.console");
         }
         if (sender instanceof Player) {
-            return "/experience [player]";
+            return I18n.tr("command.experience.usage");
         }
-        return "/experience player";
+        return I18n.tr("command.experience.usage.console");
     }
 }
