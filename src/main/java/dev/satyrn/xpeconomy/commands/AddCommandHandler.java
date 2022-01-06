@@ -126,7 +126,10 @@ public final class AddCommandHandler extends CommandHandler {
             return true;
         }
 
-        account.deposit(amount);
+        if (!account.deposit(amount)) {
+            sender.sendMessage(I18n.tr("command.balance.add.failure"));
+            return true;
+        }
 
         if ((sender instanceof final Player player)
                 && player.getUniqueId() == target.getUniqueId()) {
@@ -179,16 +182,16 @@ public final class AddCommandHandler extends CommandHandler {
     }
 
     @Override
-    protected final @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
+    protected @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
         if ("xpeconomy".equalsIgnoreCase(command.getName())) {
             if (sender instanceof Player) {
-                return "/xpeconomy add §o§dAMOUNT§r§e [§o§dPLAYER§r§e]";
+                return I18n.tr("command.balance.add.usage.subcommand");
             }
-            return "/xpeconomy add §o§dAMOUNT§r§e §o§dPLAYER§r§e";
+            return I18n.tr("command.balance.add.usage.subcommand.console");
         }
         if (sender instanceof Player) {
-            return "/addbalance §o§dAMOUNT§r§e [§o§dPLAYER§r§e]";
+            return I18n.tr("command.balance.add.usage");
         }
-        return "/addbalance §o§dAMOUNT§r§e §o§dPLAYER§r§e";
+        return I18n.tr("command.balance.add.usage.console");
     }
 }
