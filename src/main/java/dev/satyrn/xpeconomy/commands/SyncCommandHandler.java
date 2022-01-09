@@ -1,20 +1,19 @@
 package dev.satyrn.xpeconomy.commands;
 
-import dev.satyrn.xpeconomy.api.commands.CommandHandler;
+import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
-import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,22 +22,20 @@ import java.util.Optional;
  * Implements a command which can be used to sync a user's account balance to their current XP balance.
  * @author Isabel Maskrey (saturniidae)
  */
-public final class SyncCommandHandler extends CommandHandler {
-    /** The account manager instance. */
-    private final transient @NotNull AccountManager accountManager;
-    /** The current economy method. */
-    private final transient @NotNull EconomyMethod economyMethod;
-
+public final class SyncCommandHandler extends AccountCommandHandler {
     /**
      * Creates a new instance of the remove command handler.
-     * @param permission The permissions manager object.
-     * @param accountManager The account manager instance.
-     * @param economyMethod The current economy method.
+     *
+     * @param plugin The plugin instance
+     * @param permission The permission instance
+     * @param accountManager The account manager
+     * @param configuration The configuration manager
      */
-    public SyncCommandHandler(@NotNull Permission permission, @NotNull AccountManager accountManager, @NotNull EconomyMethod economyMethod) {
-        super(permission);
-        this.accountManager = accountManager;
-        this.economyMethod = economyMethod;
+    public SyncCommandHandler(final @NotNull Plugin plugin,
+                              final @NotNull Permission permission,
+                              final @NotNull AccountManager accountManager,
+                              final @NotNull Configuration configuration) {
+        super(plugin, permission, accountManager, configuration);
     }
 
     /**
@@ -83,7 +80,7 @@ public final class SyncCommandHandler extends CommandHandler {
             final String targetName = args[playerArgIndex];
             final Optional<? extends Player> result = Commands.getOnlinePlayer(targetName);
             if (result.isEmpty()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target", targetName));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget", targetName));
                 return true;
             }
             target = result.get();
@@ -96,27 +93,27 @@ public final class SyncCommandHandler extends CommandHandler {
             }
         }
 
-        final Account account = this.accountManager.getAccount(target.getUniqueId());
+        final Account account = this.getAccountManager().getAccount(target.getUniqueId());
         if (account == null) {
             if (sender instanceof final Player player
                     && player.getUniqueId() == target.getUniqueId()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+                sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName()));
             }
             return true;
         }
 
-        account.setBalance(this.economyMethod.scale(PlayerXPUtils.getPlayerXPTotal(target.getUniqueId())));
+        account.setBalanceRaw(PlayerXPUtils.getPlayerXPTotal(target), false);
 
         if (sender instanceof final Player player
                 && player.getUniqueId() == target.getUniqueId()) {
             sender.sendMessage(I18n.tr("command.balance.sync.result",
-                    this.economyMethod.toString(account.getBalance(), true)));
+                    this.getEconomyMethod().toString(account.getBalance(), true)));
         } else {
             sender.sendMessage(I18n.tr("command.balance.sync.result.others",
                     target.getName(),
-                    this.economyMethod.toString(account.getBalance(), true)));
+                    this.getEconomyMethod().toString(account.getBalance(), true)));
         }
 
         return true;

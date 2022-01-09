@@ -8,6 +8,9 @@ import java.util.UUID;
 
 /**
  * Manages, creates, saves, and loads player accounts.
+ *
+ * @author Isabel Maskrey
+ * @since 1.0-SNAPSHOT
  */
 public interface AccountManager {
     /**
@@ -36,7 +39,8 @@ public interface AccountManager {
      * @param player The player instance.
      * @return The new account.
      */
-    @NotNull Account createAccount(final @NotNull OfflinePlayer player);
+    @SuppressWarnings("UnusedReturnValue")
+    @Nullable Account createAccount(final @NotNull OfflinePlayer player);
 
     /**
      * Gets an account with a specific player UUID.

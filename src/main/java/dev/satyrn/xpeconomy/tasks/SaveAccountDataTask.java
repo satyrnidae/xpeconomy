@@ -28,7 +28,7 @@ public final class SaveAccountDataTask extends BukkitRunnable {
      */
     @Override
     public void run() {
-        this.plugin.getLogger().log(Level.FINE, "[Tasks] Writing account data to disk.");
+        this.plugin.getLogger().log(Level.FINER, "[Scheduled Task] Saving account data.");
         this.accountManager.save();
     }
 }

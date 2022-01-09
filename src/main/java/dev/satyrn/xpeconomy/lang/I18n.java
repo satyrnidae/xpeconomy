@@ -1,6 +1,10 @@
 package dev.satyrn.xpeconomy.lang;
 
+import dev.satyrn.xpeconomy.api.configuration.ConfigurationConsumer;
+import dev.satyrn.xpeconomy.configuration.Configuration;
+import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +20,7 @@ import java.util.regex.Pattern;
 /**
  * Message internationalization for Experience Economy
  */
-public final class I18n {
+public final class I18n implements ConfigurationConsumer {
     /**
      * The base name for all locales without a language name.
      */
@@ -59,10 +63,12 @@ public final class I18n {
      *
      * @param plugin The parent plugin instance.
      */
-    public I18n(final Plugin plugin) {
+    public I18n(final Plugin plugin, final @NotNull Configuration configuration) {
         this.plugin = plugin;
         this.defaultBundle = ResourceBundle.getBundle(BASE_NAME, this.defaultLocale, new Utf8LangFileControl());
         this.localeBundle = this.defaultBundle;
+        this.reloadConfiguration(configuration);
+        ConfigurationConsumerRegistry.register(this);
     }
 
     /**
@@ -129,7 +135,7 @@ public final class I18n {
                 messageFormat = new MessageFormat(resourceString);
             } catch (IllegalArgumentException ex) {
                 this.plugin.getLogger().log(Level.SEVERE,
-                        String.format("Invalid Translation Key for \"%s\": %s", key, ex.getMessage()),
+                        String.format("[I18n] Invalid Translation Key for \"%s\": %s", key, ex.getMessage()),
                         ex);
                 resourceString = resourceString.replaceAll("\\{(\\D*?)}", "\\[$1\\]");
                 messageFormat = new MessageFormat(resourceString);
@@ -150,7 +156,7 @@ public final class I18n {
             return localeBundle.getString(key);
         } catch (MissingResourceException ex) {
             this.plugin.getLogger().log(Level.WARNING,
-                    String.format("Missing translation key \"%s\" in resource file \"%s.lang\"", ex.getKey(),
+                    String.format("[i18n] Missing translation key \"%s\" in resource file \"%s.lang\"", ex.getKey(),
                             localeBundle.getLocale()), ex);
         }
         try {
@@ -158,6 +164,16 @@ public final class I18n {
         } catch (MissingResourceException ex) {
             return key;
         }
+    }
+
+    /**
+     * Called when the configuration is reloaded. Sets the state of the consumer based on the new configuration.
+     *
+     * @param configuration The configuration.
+     */
+    @Override
+    public void reloadConfiguration(@NotNull Configuration configuration) {
+        this.setLocale(configuration.locale.value());
     }
 
     /**

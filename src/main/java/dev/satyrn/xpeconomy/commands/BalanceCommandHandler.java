@@ -1,16 +1,17 @@
 package dev.satyrn.xpeconomy.commands;
 
-import dev.satyrn.xpeconomy.api.commands.CommandHandler;
+import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
-import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -19,29 +20,23 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Handles the balance command and subcommand.
+ * Models a command which allows a player to check another player's balance.
+ *
+ * @author Isabel Maskrey
+ * @since 1.0-SNAPSHOT
  */
-public final class BalanceCommandHandler extends CommandHandler {
-    /**
-     * The account manager instance.
-     */
-    private final transient @NotNull AccountManager accountManager;
-    /**
-     * The economy method.
-     */
-    private final transient @NotNull EconomyMethod economyMethod;
-
+public final class BalanceCommandHandler extends AccountCommandHandler {
     /**
      * Creates a new command executor.
      *
      * @param accountManager The account manager instance.
      * @param permission     The permission manager instance.
      */
-    public BalanceCommandHandler(final @NotNull AccountManager accountManager, final @NotNull Permission permission,
-                                 final @NotNull EconomyMethod economyMethod) {
-        super(permission);
-        this.accountManager = accountManager;
-        this.economyMethod = economyMethod;
+    public BalanceCommandHandler(final @NotNull Plugin plugin,
+                                 final @NotNull Permission permission,
+                                 final @NotNull AccountManager accountManager,
+                                 final @NotNull Configuration configuration) {
+        super(plugin, permission, accountManager, configuration);
     }
 
     /**
@@ -89,7 +84,7 @@ public final class BalanceCommandHandler extends CommandHandler {
             final String playerArg = args[playerArgIndex];
             final Optional<OfflinePlayer> result = Commands.getPlayer(playerArg);
             if (result.isEmpty()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target", playerArg));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget", playerArg));
                 return true;
             }
             target = result.get();
@@ -109,13 +104,13 @@ public final class BalanceCommandHandler extends CommandHandler {
             }
         }
 
-        final Account account = this.accountManager.getAccount(target.getUniqueId());
+        final Account account = this.getAccountManager().getAccount(target.getUniqueId());
         if (account == null) {
             if (sender instanceof final Player player
                     && player.getUniqueId() == target.getUniqueId()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+                sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName()));
             }
             return true;
         }
@@ -124,11 +119,11 @@ public final class BalanceCommandHandler extends CommandHandler {
 
         if (sender instanceof final Player player
                 && player.getUniqueId() == target.getUniqueId()) {
-            sender.sendMessage(I18n.tr("command.balance.result", this.economyMethod.toString(amount, true)));
+            sender.sendMessage(I18n.tr("command.balance.result", this.getEconomyMethod().toString(amount, true)));
         } else {
             sender.sendMessage(I18n.tr("command.balance.result.others",
                     target.getName(),
-                    this.economyMethod.toString(amount, true)));
+                    this.getEconomyMethod().toString(amount, true)));
         }
 
         return true;
@@ -152,8 +147,6 @@ public final class BalanceCommandHandler extends CommandHandler {
         final int playerArgumentIndex = "xpeconomy".equalsIgnoreCase(command.getName()) ? 2 : 1;
         final List<String> completionOptions = new ArrayList<>();
 
-        final Permission permission = this.getPermission();
-
         if (args.length == playerArgumentIndex) {
             if (sender instanceof final Player player) {
                 if (this.getPermission().has(player, "xpeconomy.balance")) {
@@ -171,6 +164,14 @@ public final class BalanceCommandHandler extends CommandHandler {
         return completionOptions;
     }
 
+
+    /**
+     * Gets the command usage.
+     *
+     * @param sender The command sender.
+     * @param command The command.
+     * @return The command usage.
+     */
     @Override
     protected @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
         if ("xpeconomy".equalsIgnoreCase(command.getName())) {

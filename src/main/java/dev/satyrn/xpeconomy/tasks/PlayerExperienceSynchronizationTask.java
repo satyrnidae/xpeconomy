@@ -13,21 +13,16 @@ import java.util.logging.Level;
  * Task used to synchronize player experience with a value in an account.
  */
 public final class PlayerExperienceSynchronizationTask extends BukkitRunnable {
-    /**
-     * The plugin instance.
-     */
+    // The plugin instance.
     private final transient Plugin plugin;
-    /**
-     * The player ID.
-     */
+    // The player ID.
     private final transient UUID playerID;
-    /**
-     * The player's economy account.
-     */
+    // The player's economy account.
     private final transient Account account;
 
     /**
      * Creates a new player experience synchronization task.
+     *
      * @param plugin The plugin instance.
      * @param playerID The player ID.
      * @param account The player's economy account
@@ -52,8 +47,8 @@ public final class PlayerExperienceSynchronizationTask extends BukkitRunnable {
     @Override
     public void run() {
         if (this.account != null) {
-            this.plugin.getLogger().log(Level.FINE,
-                    String.format("[Tasks] Setting player experience to \"%s\"",
+            this.plugin.getLogger().log(Level.FINER,
+                    String.format("[Scheduled Task] Setting player experience to \"%s\"",
                             this.account.getBalanceRaw().doubleValue()));
             PlayerXPUtils.setPlayerXPTotal(this.playerID, this.account.getBalanceRaw());
         }

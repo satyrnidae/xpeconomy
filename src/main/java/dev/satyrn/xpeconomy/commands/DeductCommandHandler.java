@@ -1,16 +1,17 @@
 package dev.satyrn.xpeconomy.commands;
 
-import dev.satyrn.xpeconomy.api.commands.CommandHandler;
+import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
-import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -22,22 +23,20 @@ import java.util.Optional;
  * Implements a command which can be used to deduct a specific amount from a player's account.
  * @author Isabel Maskrey (saturniidae)
  */
-public final class DeductCommandHandler extends CommandHandler {
-    /** The account manager instance. */
-    private final transient @NotNull AccountManager accountManager;
-    /** The current economy method. */
-    private final transient @NotNull EconomyMethod economyMethod;
-
+public final class DeductCommandHandler extends AccountCommandHandler {
     /**
      * Creates a new instance of the remove command handler.
+     *
+     * @param plugin The plugin instance
      * @param permission The permissions manager object.
      * @param accountManager The account manager instance.
-     * @param economyMethod The current economy method.
+     * @param configuration The plugin configuration.
      */
-    public DeductCommandHandler(@NotNull Permission permission, @NotNull AccountManager accountManager, @NotNull EconomyMethod economyMethod) {
-        super(permission);
-        this.accountManager = accountManager;
-        this.economyMethod = economyMethod;
+    public DeductCommandHandler(final @NotNull Plugin plugin,
+                                final @NotNull Permission permission,
+                                final @NotNull AccountManager accountManager,
+                                final @NotNull Configuration configuration) {
+        super(plugin, permission, accountManager, configuration);
     }
 
     /**
@@ -78,12 +77,12 @@ public final class DeductCommandHandler extends CommandHandler {
 
         final BigDecimal amount;
         try {
-            if (this.economyMethod.getScale() > 0) {
+            if (this.getEconomyMethod().getScale() > 0) {
                 final double amountArg = Double.parseDouble(args[amountArgIndex]);
-                amount = this.economyMethod.scale(BigDecimal.valueOf(amountArg));
+                amount = this.getEconomyMethod().scale(BigDecimal.valueOf(amountArg));
             } else {
                 final int amountArg = Integer.parseInt(args[amountArgIndex]);
-                amount = this.economyMethod.scale(BigDecimal.valueOf(amountArg));
+                amount = this.getEconomyMethod().scale(BigDecimal.valueOf(amountArg));
             }
         } catch (NumberFormatException nfe) {
             sender.sendMessage(I18n.tr("command.balance.deduct.parameter.amount.invalid", args[amountArgIndex]));
@@ -102,7 +101,7 @@ public final class DeductCommandHandler extends CommandHandler {
             final String targetName = args[playerArgIndex];
             final Optional<OfflinePlayer> result = Commands.getPlayer(targetName);
             if (result.isEmpty()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target", targetName));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget", targetName));
                 return true;
             }
             target = result.get();
@@ -120,13 +119,13 @@ public final class DeductCommandHandler extends CommandHandler {
             }
         }
 
-        final Account account = this.accountManager.getAccount(target.getUniqueId());
+        final Account account = this.getAccountManager().getAccount(target.getUniqueId());
         if (account == null) {
             if (sender instanceof final Player player
                     && player.getUniqueId() == target.getUniqueId()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+                sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName()));
             }
             return true;
         }
@@ -134,14 +133,14 @@ public final class DeductCommandHandler extends CommandHandler {
         if (amount.compareTo(account.getBalance()) > 0) {
             if (sender instanceof final Player player
                     && player.getUniqueId() == target.getUniqueId()) {
-                sender.sendMessage(I18n.tr("command.balance.deduct.failure.low_balance",
-                                this.economyMethod.toString(account.getBalance(), true),
-                                this.economyMethod.toString(amount, true)));
+                sender.sendMessage(I18n.tr("command.balance.deduct.failure.lowBalance",
+                                this.getEconomyMethod().toString(account.getBalance(), true),
+                                this.getEconomyMethod().toString(amount, true)));
             } else {
-                sender.sendMessage(I18n.tr("command.balance.deduct.failure.low_balance.others",
+                sender.sendMessage(I18n.tr("command.balance.deduct.failure.lowBalance.others",
                         target.getName(),
-                        this.economyMethod.toString(account.getBalance(), true),
-                        this.economyMethod.toString(amount, true)));
+                        this.getEconomyMethod().toString(account.getBalance(), true),
+                        this.getEconomyMethod().toString(amount, true)));
             }
             return true;
         }
@@ -154,13 +153,13 @@ public final class DeductCommandHandler extends CommandHandler {
         if (sender instanceof final Player player
                 && player.getUniqueId() == target.getUniqueId()) {
             sender.sendMessage(I18n.tr("command.balance.deduct.result",
-                    this.economyMethod.toString(amount, true),
-                    this.economyMethod.toString(account.getBalance(), true)));
+                    this.getEconomyMethod().toString(amount, true),
+                    this.getEconomyMethod().toString(account.getBalance(), true)));
         } else {
             sender.sendMessage(I18n.tr("command.balance.deduct.result.others",
-                    this.economyMethod.toString(amount, true),
+                    this.getEconomyMethod().toString(amount, true),
                     target.getName(),
-                    this.economyMethod.toString(account.getBalance(), true)));
+                    this.getEconomyMethod().toString(account.getBalance(), true)));
         }
 
         return true;
@@ -188,9 +187,9 @@ public final class DeductCommandHandler extends CommandHandler {
 
         if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.deduct")) {
             if (args.length == amountArgIndex + 1) { // Are we currently editing the amount argument?
-                completionOptions.add(this.economyMethod.toString(BigDecimal.ZERO));
-                completionOptions.add(this.economyMethod.toString(BigDecimal.ONE));
-                completionOptions.add(this.economyMethod.toString(BigDecimal.TEN));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.ZERO));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.ONE));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.TEN));
             } else if (args.length == playerArgIndex + 1) { // Are we currently editing the player argument?
                 if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.deduct.others")) {
                     completionOptions.addAll(Commands.getPlayerNames());

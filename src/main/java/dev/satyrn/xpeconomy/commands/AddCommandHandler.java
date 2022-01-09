@@ -1,16 +1,17 @@
 package dev.satyrn.xpeconomy.commands;
 
-import dev.satyrn.xpeconomy.api.commands.CommandHandler;
+import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
-import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -19,23 +20,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public final class AddCommandHandler extends CommandHandler {
-    private final @NotNull AccountManager accountManager;
-    private final @NotNull EconomyMethod economyMethod;
-
+/**
+ * Models a command which allows players to add a balance to another player's account.
+ *
+ * @author Isabel Maskrey
+ * @since 1.0-SNAPSHOT
+ */
+public final class AddCommandHandler extends AccountCommandHandler {
     /**
      * Initializes a new command handler with the permissions manager instance.
      *
+     * @param plugin The plugin instance.
      * @param permission The permission manager instance.
      * @param accountManager The account manager instance.
-     * @param economyMethod The economy being used.
+     * @param configuration The plugin configuration instance.
      */
-    public AddCommandHandler(@NotNull Permission permission,
-                             @NotNull AccountManager accountManager,
-                             @NotNull EconomyMethod economyMethod) {
-        super(permission);
-        this.accountManager = accountManager;
-        this.economyMethod = economyMethod;
+    public AddCommandHandler(final @NotNull Plugin plugin,
+                             final @NotNull Permission permission,
+                             final @NotNull AccountManager accountManager,
+                             final @NotNull Configuration configuration) {
+        super(plugin, permission, accountManager, configuration);
     }
 
     /**
@@ -77,7 +81,7 @@ public final class AddCommandHandler extends CommandHandler {
         final BigDecimal amount;
         try {
             final double amountArg = Double.parseDouble(args[amountArgIndex]);
-            amount = BigDecimal.valueOf(amountArg).setScale(this.economyMethod.getScale(), RoundingMode.DOWN);
+            amount = BigDecimal.valueOf(amountArg).setScale(this.getEconomyMethod().getScale(), RoundingMode.DOWN);
         } catch (NumberFormatException ex) {
             sender.sendMessage(I18n.tr("command.balance.add.parameter.amount.invalid", args[amountArgIndex]));
             return true;
@@ -96,7 +100,7 @@ public final class AddCommandHandler extends CommandHandler {
             final String targetName = args[playerArgIndex];
             final Optional<OfflinePlayer> result = Commands.getPlayer(targetName);
             if (result.isEmpty()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target", targetName));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget", targetName));
                 return true;
             }
             target = result.get();
@@ -115,13 +119,13 @@ public final class AddCommandHandler extends CommandHandler {
             }
         }
 
-        final Account account = this.accountManager.getAccount(target.getUniqueId());
+        final Account account = this.getAccountManager().getAccount(target.getUniqueId());
         if (account == null) {
             if (sender instanceof final Player player
                     && player.getUniqueId() == target.getUniqueId()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+                sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName()));
             }
             return true;
         }
@@ -134,13 +138,13 @@ public final class AddCommandHandler extends CommandHandler {
         if ((sender instanceof final Player player)
                 && player.getUniqueId() == target.getUniqueId()) {
             sender.sendMessage(I18n.tr("command.balance.add.result",
-                    this.economyMethod.toString(amount, true),
-                    this.economyMethod.toString(account.getBalance(), true)));
+                    this.getEconomyMethod().toString(amount, true),
+                    this.getEconomyMethod().toString(account.getBalance(), true)));
         } else {
             sender.sendMessage(I18n.tr("command.balance.add.result.others",
-                    this.economyMethod.toString(amount, true),
+                    this.getEconomyMethod().toString(amount, true),
                     target.getName(),
-                    this.economyMethod.toString(account.getBalance(), true)));
+                    this.getEconomyMethod().toString(account.getBalance(), true)));
         }
 
         return true;
@@ -168,9 +172,9 @@ public final class AddCommandHandler extends CommandHandler {
 
         if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.add")) {
             if (args.length == amountArgIndex + 1) {
-                completionOptions.add(this.economyMethod.toString(BigDecimal.ZERO));
-                completionOptions.add(this.economyMethod.toString(BigDecimal.ONE));
-                completionOptions.add(this.economyMethod.toString(BigDecimal.TEN));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.ZERO));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.ONE));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.TEN));
             } else if (args.length == playerArgIndex + 1) {
                 if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.add.others")) {
                     completionOptions.addAll(Commands.getPlayerNames());
@@ -181,6 +185,13 @@ public final class AddCommandHandler extends CommandHandler {
         return completionOptions;
     }
 
+    /**
+     * Gets the command usage.
+     *
+     * @param sender The command sender.
+     * @param command The command.
+     * @return The command usage.
+     */
     @Override
     protected @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
         if ("xpeconomy".equalsIgnoreCase(command.getName())) {

@@ -15,26 +15,13 @@ import java.util.logging.Level;
 /**
  * Listener class for player events.
  */
-public final class PlayerEventListener implements Listener {
-    /**
-     * The account manager instance.
-     */
-    private final transient AccountManager accountManager;
-    /**
-     * The plugin instance.
-     */
-    private final transient Plugin plugin;
-
+public record PlayerEventListener(Plugin plugin, AccountManager accountManager) implements Listener {
     /**
      * Initializes the player event listener.
      *
      * @param accountManager The account manager instance.
      */
-    public PlayerEventListener(final Plugin plugin,
-                               final AccountManager accountManager) {
-        this.plugin = plugin;
-        this.accountManager = accountManager;
-    }
+    public PlayerEventListener { }
 
     /**
      * Handles player join events.
@@ -42,9 +29,8 @@ public final class PlayerEventListener implements Listener {
      * @param e The event arguments.
      */
     @EventHandler
-    public final void onJoin(PlayerJoinEvent e) {
-        this.plugin.getLogger().log(Level.INFO,
-                "[Events] Player joined world, scheduleing attempt to apply offline balance changes.");
+    public void onJoin(PlayerJoinEvent e) {
+        this.plugin.getLogger().log(Level.FINER, "[Event] Player joined world, scheduling attempt to apply offline balance changes.");
 
         final UUID uuid = e.getPlayer().getUniqueId();
         if (!this.accountManager.hasAccount(uuid)) {
@@ -60,9 +46,8 @@ public final class PlayerEventListener implements Listener {
      * @param e The event arguments.
      */
     @EventHandler
-    public final void onExpChange(PlayerExpChangeEvent e) {
-        this.plugin.getLogger().log(Level.INFO,
-                "[Events] Player Experience Update scheduled account balance synchronization.");
+    public void onExpChange(PlayerExpChangeEvent e) {
+        this.plugin.getLogger().log(Level.FINER, "[Event] Player Experience Update scheduled account balance synchronization.");
 
         final UUID uuid = e.getPlayer().getUniqueId();
         new PlayerBalanceSynchronizationTask(this.plugin, e.getPlayer(), this.accountManager.getAccount(uuid))

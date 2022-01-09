@@ -2,29 +2,59 @@
 # If Enabled is set to false, then file storage will be used instead.
 mysql:
   # Whether the MySQL server backend should be enabled.
+  # Defaults to false.
   enabled: false
-  # The MySQL server hostname.
+  # The MySQL server IP or hostname.
+  # Defaults to "localhost".
   hostname: localhost
   # The MySQL server port.
+  # Defaults to 3306.
   port: 3306
   # The name of the database to use.
-  database: experience_eco
+  # Defaults to "spigot".
+  database: spigot
   # The MySQL user ID.
+  # Defaults to "root".
   userID: root
   # The MySQL user password.
-  password: root
+  # Defaults to "password".
+  password: password
   # Options for the MySQL connection. Represented as key-value pairs.
   flags:
     - allowReconnect: false
       useSSL: false
   # Optional prefix for any created table's names.
   # Useful if you are only using a single database for multiple plugins.
-  tablePrefix: "xpeco_"
+  # Defaults to "xpeco".
+  tablePrefix: xpeco
 # The initial account balance for new player accounts.
-startingValue: 0
+# Defaults to zero.
+startingBalance: 0
 # The locale to use while translating chat messages.
-# Defaults to en_US.
-locale: "en_US"
+# Defaults to "en_US".
+locale: en_US
 # The economy method to use.
 # Defaults to "POINTS". Valid values are "POINTS", "LEVELS", and "PER_HUNDRED" (case insensitive)
-economyMethod: "points"
+economyMethod: points
+# Experience Bottle options
+experienceBottleOptions:
+  # Whether experience bottle management should be enabled.
+  # Defaults to false.
+  enabled: false
+  # A block material that will allow the user to fill experience bottles if they right-click it with an empty bottle.
+  # List of valid values: https://papermc.io/javadocs/paper/1.18/org/bukkit/Material.html#enum-constant-summary
+  # Defaults to air. If set to air, this functionality will be disabled.
+  fillInteractBlock: enchanting_table
+  # Whether bottles should never be thrown or not.
+  # Players can always opt to use XP bottles instead of throwing them by sneaking.
+  # Defaults to true.
+  throwBottles: true
+  # The default number of experience points per bottle.
+  # Defaults to 10 points.
+  pointsPerBottle: 7
+  # Refunds thrown bottles
+  # Defaults to false
+  refundThrownBottles: false
+# Whether to show debug output in the console.
+# Defaults to false.
+debug: false

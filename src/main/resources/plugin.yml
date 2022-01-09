@@ -1,9 +1,9 @@
 name: ExperienceEconomy
 version: ${project.version}
 main: dev.satyrn.xpeconomy.ExperienceEconomyPlugin
-api-version: 1.17
-prefix: xpeconomy
-softdepend: [ Vault ]
+api-version: 1.18
+prefix: Experience Economy
+depend: [ Vault ]
 loadBefore: [ Essentials ]
 authors: [ satyrnidae ]
 description: No more fiat currencies! Tie your economy directly to your XP levels!
@@ -38,8 +38,6 @@ commands:
   pay:
     description: Pays another player an amount from the sender's balance. Cannot be executed via console
     usage: /<command> §d§oPLAYER§r §d§oAMOUNT§r
-    aliases:
-      - deposit
   setbalance:
     description: Sets a player's account balance to a desired value.
     usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
@@ -51,6 +49,8 @@ commands:
   transfer:
     description: Transfers balances from one player to another.
     usage: /<command> §d§oAMOUNT PLAYER RECIPIENT§r
+    aliases:
+      - xfer
   xpeconomy:
     description: Performs various tasks for the xpeconomy plugin
     usage: /<command> {about|add|balance|experience|help|pay|remove|set|sync|transfer|withdraw} [§d§oARGS§r...]
@@ -65,6 +65,7 @@ permissions:
       xpeconomy.balance.*: true
       xpeconomy.experience.*: true
       xpeconomy.pay: true
+      xpeconomy.reload: true
   xpeconomy.balance:
     default: true
     description: Allows a user to query account balances
@@ -217,3 +218,6 @@ permissions:
   xpeconomy.pay:
     default: true
     description: Allows a user to pay other users
+  xpeconomy.reload:
+     default: op
+     description: Allows a user to reload the plugin's configuration file.

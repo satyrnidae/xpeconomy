@@ -1,3 +1,5 @@
+bottle.fill.lowBalance=§cYour current balance of §e{0}§c is less than §e{1}§c, the minimum required amount to fill a bottle!§r
+
 command.about.result=§a{0}§r\nVersion: §a{1}§r\nAuthors: {2}
 command.about.usage=/xpeconomy about
 
@@ -16,8 +18,8 @@ command.balance.add.usage.subcommand=§r/xpeconomy add §d§oAMOUNT§r [§d§oPL
 command.balance.add.usage.subcommand.console=§r/xpeconomy add §d§oAMOUNT PLAYER§r
 
 command.balance.deduct.failure=§cAn error occurred when deducting the balance from the player's account.
-command.balance.deduct.failure.low_balance=§cYour current balance is §e{0}§c, which is less than the deducted amount §e{1}§c!
-command.balance.deduct.failure.low_balance.others=§e{0}''s§c current balance is §e{1}§c, which is less than the deducted amount §e{2}§c!
+command.balance.deduct.failure.lowBalance=§cYour current balance is §e{0}§c, which is less than the deducted amount §e{1}§c!
+command.balance.deduct.failure.lowBalance.others=§e{0}''s§c current balance is §e{1}§c, which is less than the deducted amount §e{2}§c!
 command.balance.deduct.parameter.amount.invalid=§cThe amound §e{0}§c is not a valid amount to deduct.
 command.balance.deduct.parameter.amount.missing=§cYou must specify an amount to deduct.
 command.balance.deduct.parameter.player.missing=§cThe console must specify a player to deduct account balances.
@@ -61,7 +63,7 @@ command.balance.sync.usage.console=§r/sync §d§oPLAYER§r
 command.balance.sync.usage.subcommand=§r/xpeconomy sync [§d§oPLAYER§r]
 command.balance.sync.usage.subcommand.console=§r/xpeconomy sync §d§oPLAYER§r
 
-command.balance.transfer.failure.low_balance=§e{0}''s§c account balance is §e{1}§c, which is less than the deducted amount §e{2}§c!
+command.balance.transfer.failure.lowBalance=§e{0}''s§c account balance is §e{1}§c, which is less than the deducted amount §e{2}§c!
 command.balance.transfer.failure.withdraw=§cAn error occurred when withdrawing from §e{0}''s§c account. The transfer was unsuccessful.
 command.balance.transfer.failure.deposit=§cAn error occurred when depositing into §e{0}''s§c account. The transfer was unsuccessful, and §e{1}''s§c balance has not been altered.
 command.balance.transfer.parameter.amount.invalid=§cThe amound §e{0}§c is not a valid amount to transfer.
@@ -90,17 +92,15 @@ command.experience.usage.console=§r/experience §d§oPLAYER§r
 command.experience.usage.subcommand=§r/xpeconomy experience [§d§oPLAYER§r]
 command.experience.usage.subcommand.console=§r/xpeconomy experience §d§oPLAYER§r
 
-command.generic.invalid_sender.non_player=§cThis command must be executed by a player, or specify a player to query.
-command.generic.invalid_sender.no_account=§cYou don''t have an account.
-command.generic.invalid_target.no_account=§e{0}§c doesn''t have an account.
-command.generic.invalid_target=§cUnable to find the player §e{0}§c.
+command.generic.invalidSender.nonPlayer=§cThis command must be executed by a player, or specify a player to query.
+command.generic.invalidSender.noAccount=§cYou don''t have an account.
+command.generic.invalidTarget.noAccount=§e{0}§c doesn''t have an account.
+command.generic.invalidTarget=§cUnable to find the player §e{0}§c.
 command.generic.usage=§cUnable to parse command arguments. Use the syntax:\n§e{0}§c.
 
-command.xpeconomy.result=§a{0} v{1}§r by {2}.\nFor help, use §b/xpeconomy help.§r
-
-command.help.invalid_page=§e{0}§c is not a valid page number. Please specify a valid page greater than zero.
-command.help.invalid_page.range=§e{0}§c is not a valid page. Please specify a number from 1 to {1}.
-command.help.invalid_page.single=§e{0}§c is not a valid page because there is only one page available.
+command.help.invalidPage=§e{0}§c is not a valid page number. Please specify a valid page greater than zero.
+command.help.invalidPage.range=§e{0}§c is not a valid page. Please specify a number from 1 to {1}.
+command.help.invalidPage.single=§e{0}§c is not a valid page because there is only one page available.
 command.help.result=§a{0} v{1}§r by {2}\nAvailable commands:
 command.help.list.about=§6about§r - Gets basic information about the plugin.
 command.help.list.add=§6add§r - Adds an amount to a player''s balance.
@@ -109,9 +109,11 @@ command.help.list.deduct=§6deduct§r - Deducts an amount from a player''s balan
 command.help.list.experience=§6experience§r - Gets a player''s current XP amount.
 command.help.list.help=§6help§r - Gets help for the plugin''s various commands.
 command.help.list.pay=§6pay§r - Pays another player an amount.
+command.help.list.reload=§6reload§r - Reloads the plugin''s main configuration file.
 command.help.list.set=§6set§r - Sets a player''s account balance to a given value.
 command.help.list.sync=§6sync§r - Syncs a player''s account balance to their XP balance.
 command.help.list.transfer=§6transfer§r - Transfers an amount from one player''s account to another''s.
+command.help.list.xpeconomy=§6xpeconomy§r - Handles various commands for Experience Economy.
 command.help.list.pagination=§7§oPage {0}/{1}. Use §b/xpeconomy help <page>§7 to swap.§r
 command.help.about=§6/xpeconomy about§r\n§7----------------§r\nGets basic information about the plugin.\nUsage: {0}
 command.help.add=§6/add§r\n§7----§r\nAdds an amount to a player''s balance.\nUsage: {0}\n§7§oNotes: If PLAYER is unspecified, the player who executed the command will be used instead.§r
@@ -120,36 +122,46 @@ command.help.deduct=§6/deduct§r\n§7-------§r\nDeducts an amount from a playe
 command.help.experience=§6/experience§r\n§7-----------§r\nGets a player''s current experience balance.\nUsage: {0} \n§7§oNotes: PLAYER must be a player who is currently online.\nIf PLAYER is unspecified, the player who executed the command will be used instead.§r
 command.help.help=§6/xpeconomy help§r\n---------------§r\nProvides help information about Experience Economy commands.\nUsage: {0}
 command.help.pay=§6/pay§r\n§7----§r\nPays another player an amount from the command sender''s account.\nUsage: {0}
+command.help.reload=§6/xpeconomy reload§r\n§7-----------------§r\nReloads the plugin''s main configuration file.\nUsage: {0}\n§7§oNotes: Some settings, such as whether the plugin uses YAML or MySQL storage, cannot be changed without restarting the server.
 command.help.set=§6/setbalance§r\n§7-----------§r\nSets a player''s balance to the given amount.\nUsage: {0}\n§7§oNotes: If PLAYER is unspecified, the player who executed the command will be used instead.§r
 command.help.sync=§6/syncxp§r\n§7-------§r\nSynchronizes a player''s account balance to their current XP amount.\nUsage: {0}\n§7§oNotes: PLAYER must be a player who is currently online\nIf PLAYER is unspecified, the player who executed the command will be used instead.§r
 command.help.transfer=§6/transfer§r\n§7---------§r\nTransfers an amount from one player to another.\nUsage: {0}
+command.help.xpeconomy=§6/xpeconomy§r\n----------§r\nHandles various commands for Experience Economy.\nUsage: {0}
 command.help.pagination=§7§oPage {0}/{1}. Use §b/xpeconomy help {2} <page>§7 to swap.§r
 command.help.unknown_command=§cUnknown command: §e{0}§c. Please use §b/xpeconomy help§c to see all available options.
 command.help.usage=§r/xpeconomy help {§d§oPAGE§r|§d§oCOMMAND§r [§d§oPAGE§r]}
 
-command.pay.insufficient_balance=§cYour balance is too low.
-command.pay.invalid_amount=§cThe amount §e{0}§c is not a valid payment amount.
-command.pay.invalid_sender=§cThis command must be executed by a player.
+command.pay.insufficientBalance=§cYour balance is too low.
+command.pay.invalidAmount=§cThe amount §e{0}§c is not a valid payment amount.
+command.pay.invalidSender=§cThis command must be executed by a player.
 command.pay.permission=§cYou don''t have permission to pay others.
 command.pay.result=Paid §e{0} {1}§r xp.
-command.pay.invalid_target=§cThere is no reason to pay yourself anything!
+command.pay.invalidTarget=§cThere is no reason to pay yourself anything!
 command.pay.usage=§r/pay §d§oPLAYER AMOUNT§r
 command.pay.usage.subcommand=§r/xpeconomy pay §d§oPLAYER AMOUNT§r
+
+command.reload.permission=§cYou don't have permission to reload the plugin's configuration files!
+command.reload.start=§7§oReloading {0} configuration...§r
+command.reload.complete=§aReload complete!§r
+command.reload.usage=§r/xpeconomy reload§r
+
+command.xpEconomy.result=§a{0} v{1}§r by {2}.\nFor help, use §b/xpeconomy help.§r
+command.xpEconomy.invalidSubcommand=§cUnknown subcommand: §e{0}§c. Use §b/xpeconomy help§c to see all available subcommands.§r
+command.xpEconomy.invalidSubcommand.requiresPlayer=§cThe subcommand {0} must be executed by a player.§r
+command.xpEconomy.invalidSubcommand.requiresNonPlayer=§cThe subcommand {0} cannot be executed by a player.§r
+command.xpEconomy.invalidSubcommand.permission=§cYou do not have access to the §e{0}§r subcommand.§r
+command.xpEconomy.usage=§r/xpeconomy {about|add|balance|deduct|experience|help|pay|reload|set|sync|transfer} [§d§oARGSr]
 
 currency.levels.name.plural=levels
 currency.levels.name=level
 currency.levels.format={0} {1}
 currency.points.name.plural=xp
 currency.points.name=xp
-currency.points.format={0} {1}
-currency.perhundred.name=xp-cent
-currency.perhundred.name.plural=xp-cents
-currency.perhundred.format={0} {1}
 
-economy.account_not_found=Player does not have an account on this server.
-economy.insufficient_funds=Insufficient funds available.
-economy.negative_deposit=Cannot deposit a negative amount into an account.
-economy.negative_withdrawal=Cannot withdraw a negative amount from an account.
+currency.points.format={0} {1}
+currency.perHundred.name=xp/cent
+currency.perHundred.name.plural=xp/cents
+currency.perHundred.format={0} {1}
 
 experience.level=level
 experience.level.plural=levels

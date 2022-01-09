@@ -12,25 +12,18 @@ import java.util.logging.Level;
 /**
  * Handles world events.
  */
-public final class WorldEventListener implements Listener {
-    /**
-     * The plugin instance.
-     */
-    private final transient Plugin plugin;
-    /**
-     * The account manager instance.
-     */
-    private final transient AccountManager accountManager;
-
+public class WorldEventListener implements Listener {
+    private final Plugin plugin;
+    private final AccountManager accountManager;
     /**
      * Creates a new world event listener.
      *
-     * @param plugin The plugin instance.
+     * @param plugin         The plugin instance.
      * @param accountManager The account manager instance.
      */
-    public WorldEventListener(final Plugin plugin, final AccountManager accountManager) {
+    public WorldEventListener(Plugin plugin, AccountManager accountManager) {
         this.plugin = plugin;
-        this.accountManager = accountManager;
+        this.accountManager =  accountManager;
     }
 
     /**
@@ -40,8 +33,7 @@ public final class WorldEventListener implements Listener {
      */
     @EventHandler
     public void onWorldSave(WorldSaveEvent e) {
-        this.plugin.getLogger().log(Level.FINE,
-                "[Events] World save triggered account data write to disk.");
-        new SaveAccountDataTask(this.plugin, this.accountManager).runTask(this.plugin);
+            this.plugin.getLogger().log(Level.FINER, "[Event] World save triggered account data write to disk.");
+            new SaveAccountDataTask(this.plugin, this.accountManager).runTaskAsynchronously(this.plugin);
     }
 }

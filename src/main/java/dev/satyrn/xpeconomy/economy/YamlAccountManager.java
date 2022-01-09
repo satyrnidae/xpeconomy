@@ -8,13 +8,14 @@ import org.bukkit.plugin.Plugin;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.logging.Level;
 
 /**
  * An account manager with a YAML file backend.
  */
-public final class YamlAccountManager extends AccountManagerBase {
+public final class YamlAccountManager extends PlayerAccountManagerBase {
     /**
      * The plugin instance.
      */
@@ -49,30 +50,30 @@ public final class YamlAccountManager extends AccountManagerBase {
             this.ymlConfigFile.load(configPath);
         } catch (InvalidConfigurationException | IOException ex) {
             this.plugin.getLogger().log(Level.SEVERE,
-                    String.format("[Accounts] Failed to load accounts.yml: %s", ex.getMessage()), ex);
+                    String.format("[Storage] Failed to load accounts.yml: %s", ex.getMessage()), ex);
             return;
         }
 
         final List<Map<?, ?>> accountsSection = this.ymlConfigFile.getMapList("accounts");
         for (final Map<?, ?> map : accountsSection) {
-            final PlayerAccount account = new PlayerAccount(this.economyMethod);
+            final PlayerAccount account = new PlayerAccount(this.configuration);
             try {
                 for (final Map.Entry<?, ?> savedAccount : map.entrySet()) {
                     if (savedAccount.getKey().toString().equals("uuid")) {
                         account.setUUID(UUID.fromString(savedAccount.getValue().toString()));
                     } else if (savedAccount.getKey().toString().equals("balance")) {
                         final double balance = Double.parseDouble(savedAccount.getValue().toString());
-                        account.setBalanceRaw(BigDecimal.valueOf(balance), false);
+                        account.setBalanceRaw(BigDecimal.valueOf(balance).setScale(0, RoundingMode.HALF_UP).toBigInteger(), false);
                     }
                 }
 
                 this.plugin.getLogger().log(Level.FINE,
-                        String.format("[Accounts] Loaded an account for player %s with balance %s",
+                        String.format("[Storage] Loaded an account for player %s with balance %s",
                                 account.getUUID(), account.getBalance().doubleValue()));
                 this.accounts.add(account);
             } catch (IllegalArgumentException ex) {
                 this.plugin.getLogger().log(Level.WARNING,
-                        String.format("[Accounts] Failed to load an account from accounts.yml: %s", ex.getMessage()),
+                        String.format("[Storage] Failed to load an account from accounts.yml: %s", ex.getMessage()),
                         ex);
             }
         }
@@ -80,10 +81,9 @@ public final class YamlAccountManager extends AccountManagerBase {
 
     /**
      * Saves account data to a YAML file.
-     *
      */
     @Override
-    public void save() {
+    public synchronized void save() {
         final File configPath = new File(plugin.getDataFolder().getPath() + "/accounts.yml");
         final List<Map<?, ?>> mapList = new ArrayList<>();
 
@@ -100,7 +100,7 @@ public final class YamlAccountManager extends AccountManagerBase {
             this.ymlConfigFile.save(configPath);
         } catch (final IOException ex) {
             this.plugin.getLogger().log(Level.SEVERE,
-                    String.format("[Accounts] Failed to save accounts.yml: %s", ex.getMessage()), ex);
+                    String.format("[Storage] Failed to save accounts.yml: %s", ex.getMessage()), ex);
         }
     }
 }

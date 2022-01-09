@@ -1,27 +1,91 @@
 package dev.satyrn.xpeconomy.commands;
 
-import dev.satyrn.xpeconomy.api.commands.CommandHandler;
+import com.google.gson.*;
+import dev.satyrn.xpeconomy.api.commands.VaultCommandHandler;
 import dev.satyrn.xpeconomy.lang.I18n;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.ChatPaginator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.io.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class HelpCommandHandler extends CommandHandler {
-    private final @NotNull JavaPlugin plugin;
+public class HelpCommandHandler extends VaultCommandHandler {
+    private final @NotNull List<HelpProvider> helpProviders = new ArrayList<>();
 
-    public HelpCommandHandler(Permission permission,
-                              @NotNull JavaPlugin plugin) {
-        super(permission);
-        this.plugin = plugin;
+    /**
+     * Creates a handler for the help subcommand.
+     *
+     * @param plugin The plugin instance.
+     * @param permission The permission instance.
+     */
+    public HelpCommandHandler(final @NotNull Plugin plugin,
+                              final @NotNull Permission permission) {
+        super(plugin, permission);
+        loadHelpProviders();
+    }
+
+    private void loadHelpProviders() {
+        final @NotNull Logger logger = this.getPlugin().getLogger();
+        final @Nullable InputStream helpProvidersStream = this.getClass().getResourceAsStream("/helpProviders.json");
+
+        if (helpProvidersStream == null) {
+            logger.log(Level.SEVERE, "[Help] Unable to find help providers file! Plugin help will not work!");
+            return;
+        }
+
+        try (final @NotNull BufferedReader bufferedReader =
+                new BufferedReader(new InputStreamReader(helpProvidersStream))) {
+            final @NotNull JsonArray helpProvidersJsonArray = JsonParser.parseReader(bufferedReader).getAsJsonArray();
+            for (final @NotNull JsonElement jsonElement : helpProvidersJsonArray) {
+                final @NotNull JsonObject helpProvider = jsonElement.getAsJsonObject();
+
+                final @Nullable String name = helpProvider.get("name").getAsString();
+                if (name == null) {
+                    logger.log(Level.WARNING, "[Help] Name was not present for a help provider!");
+                    continue;
+                }
+
+                final @Nullable String permission = helpProvider.has("permission") ? helpProvider.get("permission").getAsString() : null;
+                final boolean allowPlayers = !helpProvider.has("allowPlayers") || helpProvider.get("allowPlayers").getAsBoolean();
+                final boolean allowNonPlayers = !helpProvider.has("allowNonPlayers") || helpProvider.get("allowNonPlayers").getAsBoolean();
+                final @Nullable JsonArray playerUsageKeysJsonArray = helpProvider.has("playerUsageKeys") ? helpProvider.getAsJsonArray("playerUsageKeys") : null;
+                final @Nullable JsonArray nonPlayerUsageKeysJsonArray = helpProvider.has("nonPlayerUsageKeys") ? helpProvider.getAsJsonArray("nonPlayerUsageKeys") : null;
+                final @Nullable JsonArray aliasesJsonArray = helpProvider.has("aliases") ? helpProvider.getAsJsonArray("aliases") : null;
+
+                final @NotNull List<String> playerUsageKeys = new ArrayList<>();
+                if (playerUsageKeysJsonArray != null) {
+                    for (JsonElement item : playerUsageKeysJsonArray) {
+                        playerUsageKeys.add(item.getAsString());
+                    }
+                }
+
+                final @NotNull List<String> nonPlayerUsageKeys = new ArrayList<>();
+                if (nonPlayerUsageKeysJsonArray != null) {
+                    for (JsonElement item : nonPlayerUsageKeysJsonArray) {
+                        nonPlayerUsageKeys.add(item.getAsString());
+                    }
+                }
+
+                final @NotNull List<String> aliases = new ArrayList<>();
+                if (aliasesJsonArray != null) {
+                    for (JsonElement item : aliasesJsonArray) {
+                        aliases.add(item.getAsString());
+                    }
+                }
+
+                this.helpProviders.add(new HelpProvider(name, permission, allowPlayers, allowNonPlayers, playerUsageKeys, nonPlayerUsageKeys, aliases, this.getPermission()));
+            }
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, "[Help] Failed to load help providers file. Plugin help command will not work properly.", ex);
+        }
     }
 
     /**
@@ -42,9 +106,6 @@ public class HelpCommandHandler extends CommandHandler {
         final int pageOrCommandIndex = isSubCommand ? 1 : 0;
         final int commandPageIndex = isSubCommand ? 2 : 1;
 
-        final Permission permission = this.getPermission();
-        final boolean senderIsPlayer = sender instanceof Player;
-
         int page = 1;
         @Nullable String commandName = null;
 
@@ -60,7 +121,7 @@ public class HelpCommandHandler extends CommandHandler {
                     try {
                         page = Integer.parseInt(commandPage);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(I18n.tr("command.help.invalid_page", commandPage));
+                        sender.sendMessage(I18n.tr("command.help.invalidPage", commandPage));
                         return true;
                     }
                 }
@@ -68,58 +129,28 @@ public class HelpCommandHandler extends CommandHandler {
         }
 
         if (page < 1) {
-            sender.sendMessage(I18n.tr("command.help.invalid_page", page));
+            sender.sendMessage(I18n.tr("command.help.invalidPage", page));
             return true;
         }
 
         if (commandName == null) {
             final StringBuilder helpBuilder = new StringBuilder(I18n.tr("command.help.result",
-                    this.plugin.getDescription().getName(),
-                    this.plugin.getDescription().getVersion(),
-                    String.join(", ", this.plugin.getDescription().getAuthors())))
-                    .append('\n')
-                    .append(I18n.tr("command.help.list.about"));
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.add")) {
-                helpBuilder.append('\n')
-                        .append(I18n.tr("command.help.list.add"));
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance")) {
-                helpBuilder.append('\n')
-                        .append(I18n.tr("command.help.list.balance"));
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.deduct")) {
-                helpBuilder.append('\n')
-                        .append(I18n.tr("command.help.list.deduct"));
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.experience")) {
-                helpBuilder.append('\n')
-                        .append(I18n.tr("command.help.list.experience"));
-            }
-            helpBuilder.append('\n')
-                    .append(I18n.tr("command.help.list.help"));
-            if (senderIsPlayer && permission.has(sender, "xpeconomy.pay")) {
-                helpBuilder.append('\n')
-                        .append(I18n.tr("command.help.list.pay"));
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.set")) {
-                helpBuilder.append('\n')
-                        .append(I18n.tr("command.help.list.set"));
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.sync")) {
-                helpBuilder.append('\n')
-                        .append(I18n.tr("command.help.list.sync"));
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.transfer")) {
-                helpBuilder.append('\n')
-                        .append(I18n.tr("command.help.list.transfer"));
+                    this.getPlugin().getDescription().getName(),
+                    this.getPlugin().getDescription().getVersion(),
+                    String.join(", ", this.getPlugin().getDescription().getAuthors())));
+            for(final @NotNull HelpProvider provider : this.helpProviders) {
+                final @Nullable String listEntry = provider.getListEntry(sender);
+                if (listEntry != null && !listEntry.isBlank()) {
+                    helpBuilder.append('\n').append(listEntry);
+                }
             }
 
             final ChatPaginator.ChatPage chatPage = ChatPaginator.paginate(helpBuilder.toString(), page, 65, 8);
             if (page > chatPage.getTotalPages()) {
                 if (chatPage.getTotalPages() == 1) {
-                    sender.sendMessage(I18n.tr("command.help.invalid_page.single", page));
+                    sender.sendMessage(I18n.tr("command.help.invalidPage.single", page));
                 } else {
-                    sender.sendMessage(I18n.tr("command.help.invalid_page.range", page, chatPage.getTotalPages()));
+                    sender.sendMessage(I18n.tr("command.help.invalidPage.range", page, chatPage.getTotalPages()));
                 }
                 return true;
             }
@@ -139,133 +170,21 @@ public class HelpCommandHandler extends CommandHandler {
         return true;
     }
 
+    /**
+     * Gets help on a single command.
+     *
+     * @param command The command to get help for.
+     * @param sender The command sender.
+     * @param page The page to display.
+     */
     private void getHelpResults(@NotNull String command, @NotNull CommandSender sender, int page) {
-        final boolean senderIsPlayer = sender instanceof Player;
-        final Permission permission = this.getPermission();
-        String commandHelp = null;
-        switch (command.toLowerCase(Locale.ROOT)) {
-            case "about" -> commandHelp = I18n.tr("command.help.about", I18n.tr("command.about.usage"));
-            case "add", "addbal", "addbalance" -> {
-                if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.add")) {
-                    final StringBuilder usageBuilder = new StringBuilder();
-                    if (senderIsPlayer) {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.add.usage"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.add.usage.subcommand"));
-                    } else {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.add.usage.console"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.add.usage.subcommand.console"));
-                    }
-                    commandHelp = I18n.tr("command.help.add", usageBuilder.toString());
-                }
-            }
-            case "bal", "balance" -> {
-                if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance")) {
-                    final StringBuilder usageBuilder = new StringBuilder();
-                    if (senderIsPlayer) {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.usage"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.usage.subcommand"));
-                    } else {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.usage.console"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.usage.subcommand.console"));
-                    }
-                    commandHelp = I18n.tr("command.help.balance", usageBuilder.toString());
-                }
-            }
-            case "deduct", "deductbal", "deductbalance", "remove", "removebal", "removebalance" -> {
-                if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.deduct")) {
-                    final StringBuilder usageBuilder = new StringBuilder();
-                    if (senderIsPlayer) {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.deduct.usage"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.deduct.usage.subcommand"));
-                    } else {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.deduct.usage.console"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.deduct.usage.subcommand.console"));
-                    }
-                    commandHelp = I18n.tr("command.help.deduct", usageBuilder.toString());
-                }
-            }
-            case "exp", "experience", "xp" -> {
-                if (!senderIsPlayer || permission.has(sender, "xpeconomy.experience")) {
-                    final StringBuilder usageBuilder = new StringBuilder();
-                    if (senderIsPlayer) {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.experience.usage"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.experience.usage.subcommand"));
-                    } else {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.experience.usage.console"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.experience.usage.subcommand.console"));
-                    }
-                    commandHelp = I18n.tr("command.help.experience", usageBuilder.toString());
-                }
-            }
-            case "help" -> commandHelp = I18n.tr("command.help.help", I18n.tr("command.help.usage"));
-            case "pay", "deposit" -> {
-                if (senderIsPlayer && permission.has(sender, "xpeconomy.pay")) {
-                    String usage = "\n - "
-                            + I18n.tr("command.pay.usage")
-                            + "\n - "
-                            + I18n.tr("command.pay.usage.subcommand");
-                    commandHelp = I18n.tr("command.help.pay", usage);
-                }
-            }
-            case "set", "setbal", "setbalance" -> {
-                if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.set")) {
-                    final StringBuilder usageBuilder = new StringBuilder();
-                    if (senderIsPlayer) {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.set.usage"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.set.usage.subcommand"));
-                    } else {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.set.usage.console"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.set.usage.subcommand.console"));
-                    }
-                    commandHelp = I18n.tr("command.help.set", usageBuilder);
-                }
-            }
-            case "sync", "syncxp" -> {
-                if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.sync")) {
-                    final StringBuilder usageBuilder = new StringBuilder();
-                    if (senderIsPlayer) {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.sync.usage"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.sync.usage.subcommand"));
-                    } else {
-                        usageBuilder.append("\n - ")
-                                .append(I18n.tr("command.balance.sync.usage.console"))
-                                .append("\n - ")
-                                .append(I18n.tr("command.balance.sync.usage.subcommand.console"));
-                    }
-                    commandHelp = I18n.tr("command.help.sync", usageBuilder.toString());
-                }
-            }
-            case "transfer" -> {
-                if (senderIsPlayer && permission.has(sender, "xpeconomy.balance.transfer")) {
-                    String usage = "\n - "
-                            + I18n.tr("command.balance.transfer.usage")
-                            + "\n - "
-                            + I18n.tr("command.balance.transfer.usage.subcommand");
-                    commandHelp = I18n.tr("command.help.transfer", usage);
-                }
-            }
+        @Nullable String commandHelp = null;
+
+        final @NotNull Optional<HelpProvider> result = this.helpProviders.stream().filter(provider -> provider.isMatch(command)).findFirst();
+
+        if (result.isPresent()) {
+            final @NotNull HelpProvider helpProvider = result.get();
+            commandHelp = helpProvider.getEntry(sender);
         }
 
         if (commandHelp == null) {
@@ -276,9 +195,9 @@ public class HelpCommandHandler extends CommandHandler {
         final ChatPaginator.ChatPage chatPage = ChatPaginator.paginate(commandHelp, page, 65, 8);
         if (page > chatPage.getTotalPages()) {
             if (chatPage.getTotalPages() == 1) {
-                sender.sendMessage(I18n.tr("command.help.invalid_page.single", page));
+                sender.sendMessage(I18n.tr("command.help.invalidPage.single", page));
             } else {
-                sender.sendMessage(I18n.tr("command.help.invalid_page.range", page, chatPage.getTotalPages()));
+                sender.sendMessage(I18n.tr("command.help.invalidPage.range", page, chatPage.getTotalPages()));
             }
             return;
         }
@@ -311,38 +230,56 @@ public class HelpCommandHandler extends CommandHandler {
         final boolean isSubCommand = "xpeconomy".equalsIgnoreCase(command.getName());
         final int pageOrCommandIndex = isSubCommand ? 1 : 0;
         final List<String> completionOptions = new ArrayList<>();
-        final Permission permission = this.getPermission();
-        final boolean senderIsPlayer = sender instanceof Player;
 
         if (args.length == pageOrCommandIndex + 1) {
-            completionOptions.add("about");
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.add")) {
-                completionOptions.add("add");
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance")) {
-                completionOptions.add("balance");
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.deduct")) {
-                completionOptions.add("deduct");
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.experience")) {
-                completionOptions.add("experience");
-            }
-            completionOptions.add("help");
-            if (senderIsPlayer && permission.has(sender, "xpeconomy.pay")) {
-                completionOptions.add("pay");
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.set")) {
-                completionOptions.add("set");
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.sync")) {
-                completionOptions.add("sync");
-            }
-            if (!senderIsPlayer || permission.has(sender, "xpeconomy.balance.transfer")) {
-                completionOptions.add("transfer");
+            for(final @NotNull HelpProvider helpProvider : helpProviders) {
+                if (helpProvider.isSenderValid(sender) && helpProvider.isAllowed(sender)) {
+                    completionOptions.add(helpProvider.name);
+                }
             }
         }
 
         return completionOptions;
+    }
+
+    private record HelpProvider(String name,
+                                String defaultPermission,
+                                boolean allowPlayer,
+                                boolean allowNonPlayer,
+                                @NotNull List<String> playerUsageKeys,
+                                @NotNull List<String> nonPlayerUsageKeys,
+                                @NotNull List<String> aliases,
+                                @NotNull Permission permission) {
+        private boolean isSenderValid(final @NotNull CommandSender sender) {
+            return sender instanceof Player ? this.allowPlayer : this.allowNonPlayer;
+        }
+
+        private boolean isAllowed(final @NotNull CommandSender sender) {
+            return !(sender instanceof Player) || (this.defaultPermission == null || this.defaultPermission.isBlank() || this.permission.has(sender, this.defaultPermission));
+        }
+
+        public @Nullable String getListEntry(final @NotNull CommandSender sender) {
+            if (this.isSenderValid(sender) && this.isAllowed(sender)) {
+                return I18n.tr("command.help.list." + this.name);
+            }
+            return null;
+        }
+
+        private @NotNull String getUsage(final @NotNull CommandSender sender) {
+            final @NotNull List<String> usage = sender instanceof Player ? this.playerUsageKeys : this.nonPlayerUsageKeys;
+            return String.join("\n", usage.stream().map(key -> String.format(" - %s", I18n.tr(key))).toList());
+        }
+
+        public @Nullable String getEntry(final @NotNull CommandSender sender) {
+            if (this.isSenderValid(sender) && this.isAllowed(sender)) {
+                return I18n.tr("command.help." + this.name, "\n" + this.getUsage(sender));
+            }
+            return null;
+        }
+
+        public boolean isMatch(final @NotNull String name) {
+            return this.name.equalsIgnoreCase(name) || this.aliases.stream().anyMatch(alias -> alias.equalsIgnoreCase(name));
+        }
+
     }
 }

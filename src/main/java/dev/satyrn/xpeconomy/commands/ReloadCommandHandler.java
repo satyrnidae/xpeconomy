@@ -1,31 +1,31 @@
 package dev.satyrn.xpeconomy.commands;
 
 import dev.satyrn.xpeconomy.api.commands.VaultCommandHandler;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
+import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
- * Command which can be used to print information about the plugin, such as name, author, and version.
- *
- * @author Isabel Maskrey
- * @since 1.0-SNAPSHOT
+ * Models a command which allows a user to trigger a configuration reload.
  */
-public final class AboutCommandHandler extends VaultCommandHandler {
+public class ReloadCommandHandler extends VaultCommandHandler {
     /**
-     * Initializes a new command handler with the permission manager instance.
+     * Initializes a new command handler with the permissions manager instance.
      *
      * @param plugin The plugin instance.
      * @param permission The permission manager instance.
      */
-    public AboutCommandHandler(final @NotNull Plugin plugin, final @NotNull Permission permission) {
+    public ReloadCommandHandler(@NotNull Plugin plugin, @NotNull Permission permission) {
         super(plugin, permission);
     }
 
@@ -43,18 +43,24 @@ public final class AboutCommandHandler extends VaultCommandHandler {
      */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        final PluginDescriptionFile description = this.getPlugin().getDescription();
-        final List<String> authors = description.getAuthors();
-        final StringBuilder authorsStringBuilder = new StringBuilder();
+        if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.reload")) {
+            sender.sendMessage(I18n.tr("command.reload.start", this.getPlugin().getDescription().getName()));
 
-        for (int index = 0; index < authors.size(); index++) {
-            if (index > 0) {
-                authorsStringBuilder.append(", ");
+            this.getPlugin().reloadConfig();
+
+            final Configuration configuration = new Configuration(this.getPlugin());
+            if (configuration.debug.value()) {
+                this.getPlugin().getLogger().setLevel(Level.ALL);
+            } else {
+                this.getPlugin().getLogger().setLevel(Level.INFO);
             }
-            authorsStringBuilder.append(authors.get(index));
-        }
 
-        sender.sendMessage(I18n.tr("command.about.result", description.getName(), description.getVersion(), authorsStringBuilder.toString()));
+            ConfigurationConsumerRegistry.reloadConfiguration(configuration);
+
+            sender.sendMessage(I18n.tr("command.reload.complete"));
+        } else {
+            sender.sendMessage(I18n.tr("command.reload.permission"));
+        }
         return true;
     }
 

@@ -1,27 +1,29 @@
 package dev.satyrn.xpeconomy.economy;
 
+import dev.satyrn.xpeconomy.api.configuration.ConfigurationConsumer;
 import dev.satyrn.xpeconomy.api.economy.Account;
+import dev.satyrn.xpeconomy.configuration.Configuration;
+import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
-import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.BigInteger;
 import java.util.UUID;
 
 /**
  * Represents a player account. Handles all XP operations.
  */
-public final class PlayerAccount implements Account {
+public final class PlayerAccount implements Account, ConfigurationConsumer {
     /**
      * The economy method to use.
      */
-    private final transient EconomyMethod economyMethod;
+    private @NotNull transient EconomyMethod economyMethod = EconomyMethod.getDefault();
     /**
      * The account balance.
      */
-    private BigDecimal balance;
+    private BigInteger balance;
     /**
      * The UUID on the account.
      */
@@ -29,20 +31,33 @@ public final class PlayerAccount implements Account {
 
     /**
      * Creates a new account with no data.
+     *
+     * @param configuration The configuration instance.
      */
-    PlayerAccount(final EconomyMethod economyMethod) {
-        this.economyMethod = economyMethod;
+    PlayerAccount(final Configuration configuration) {
+        this.reloadConfiguration(configuration);
+        ConfigurationConsumerRegistry.register(this);
     }
 
     /**
      * Creates an account with a name and UUID.
      *
-     * @param economyMethod The economy method for the account.
+     * @param configuration The configuration instance.
      * @param uuid The UUID on the account.
      */
-    public PlayerAccount(final EconomyMethod economyMethod, final UUID uuid) {
-        this(economyMethod);
+    public PlayerAccount(final Configuration configuration, final UUID uuid) {
+        this(configuration);
         this.uuid = uuid;
+    }
+
+    /**
+     * Called when the configuration is reloaded. Sets the state of the consumer based on the new configuration.
+     *
+     * @param configuration The configuration.
+     */
+    @Override
+    public void reloadConfiguration(@NotNull Configuration configuration) {
+        this.economyMethod = configuration.economyMethod.value();
     }
 
     /**
@@ -74,20 +89,10 @@ public final class PlayerAccount implements Account {
      */
     @Override
     public @NotNull BigDecimal getBalance() {
-        final BigDecimal balance;
-
-        switch (this.economyMethod) {
-            case LEVELS -> balance = PlayerXPUtils.toLevelProgress(this.getBalanceRaw()).getValue0();
-            case PER_HUNDRED -> balance = this.getBalanceRaw().divide(BigDecimal.valueOf(100),
-                                                                        this.economyMethod.getScale(),
-                                                                        this.economyMethod.getRoundingMode());
-            default -> balance = this.getBalanceRaw();
-        }
-
-        return balance;
+        return this.economyMethod.fromRawBalance(this.getBalanceRaw());
     }
 
-    public @NotNull BigDecimal getBalanceRaw() {
+    public @NotNull BigInteger getBalanceRaw() {
         return this.balance;
     }
 
@@ -111,14 +116,7 @@ public final class PlayerAccount implements Account {
      */
     @Override
     public @NotNull PlayerAccount setBalance(final @NotNull BigDecimal value, final boolean updateXPValue) {
-        final BigDecimal newBalance;
-        switch (this.economyMethod) {
-            case LEVELS -> newBalance = PlayerXPUtils.getXPForLevel(value);
-            case PER_HUNDRED -> newBalance = value.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.DOWN);
-            default -> newBalance = value;
-        }
-
-        return this.setBalanceRaw(newBalance, updateXPValue);
+        return this.setBalanceRaw(this.economyMethod.toRawBalance(value, this.getBalanceRaw()), updateXPValue);
     }
 
     /**
@@ -126,8 +124,8 @@ public final class PlayerAccount implements Account {
      * @param value The experience point balance.
      * @return The account instance.
      */
-    public @NotNull PlayerAccount setBalanceRaw(final @NotNull BigDecimal value, final boolean updateXPValue) {
-        this.balance = value.setScale(0, RoundingMode.HALF_UP);
+    public @NotNull PlayerAccount setBalanceRaw(final @NotNull BigInteger value, final boolean updateXPValue) {
+        this.balance = value;
 
         if (updateXPValue) {
             PlayerXPUtils.setPlayerXPTotal(this.uuid, this.balance);
@@ -145,15 +143,9 @@ public final class PlayerAccount implements Account {
      */
     @Override
     public boolean has(final @NotNull BigDecimal value) {
-        final BigDecimal hasBalance;
+        final BigInteger hasBalance = this.economyMethod.toRawBalance(value, BigInteger.ZERO);
 
-        switch (this.economyMethod) {
-            case LEVELS -> hasBalance = PlayerXPUtils.getXPForLevel(value);
-            case PER_HUNDRED -> hasBalance = value.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.DOWN);
-            default -> hasBalance = value;
-        }
-
-        return this.balance.compareTo(hasBalance) > -1;
+        return this.balance.compareTo(hasBalance) >= 0;
     }
 
     /**
@@ -191,35 +183,9 @@ public final class PlayerAccount implements Account {
      * @param value The value to add
      * @param updateXPValue If true, also updates the player's XP value to match.
      */
-    private void addBalance(@NotNull BigDecimal value, boolean updateXPValue) {
-        final BigDecimal newValue;
-        switch (this.economyMethod) {
-            case LEVELS -> {
-                // Extract the player's current level / progress from their current balance
-                final Pair<BigDecimal, BigDecimal> levelProgress = PlayerXPUtils.toLevelProgress(this.balance);
+    private void addBalance(@NotNull BigDecimal value, @SuppressWarnings("SameParameterValue") boolean updateXPValue) {
+        final BigInteger addValue = this.economyMethod.toRawBalance(value, BigInteger.ZERO);
 
-                // Get XP points for current level progress.
-                final BigDecimal currentLevelXp = PlayerXPUtils.getCurrentLevelProgress(levelProgress.getValue0(),
-                        levelProgress.getValue1());
-
-                // Add the current level with the new value
-                final BigDecimal nextLevel = levelProgress.getValue0().add(value);
-
-                // Get the XP points for the new level value
-                final BigDecimal xpForNextLevel = PlayerXPUtils.getXPForLevel(nextLevel);
-
-                // Add next level and progress XP for the new balance.
-                newValue = xpForNextLevel.add(currentLevelXp);
-            } case PER_HUNDRED -> {
-                // For a per hundred points based economy, we need to multiply
-                // the value by 100 and then add it to the balance.
-                final BigDecimal rawXpValue = value.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.DOWN);
-
-                newValue = this.getBalanceRaw().add(rawXpValue);
-            }
-            default -> newValue = this.getBalanceRaw().add(value);
-        }
-
-        this.setBalanceRaw(newValue, updateXPValue);
+        this.setBalanceRaw(this.balance.add(addValue), updateXPValue);
     }
 }

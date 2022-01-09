@@ -1,16 +1,19 @@
 package dev.satyrn.xpeconomy.economy;
 
 import com.google.common.collect.ImmutableList;
+import dev.satyrn.xpeconomy.api.configuration.ConfigurationConsumer;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
+import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,7 +21,7 @@ import java.util.List;
 /**
  * The XP Economy handler.
  */
-public final class ExperienceEconomy implements Economy {
+public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
     /**
      * Response for unimplemented methods
      */
@@ -32,7 +35,8 @@ public final class ExperienceEconomy implements Economy {
      * The account manager instance.
      */
     private final transient AccountManager accountManager;
-    private final transient EconomyMethod economyMethod;
+    // The economy method to use.
+    private transient @NotNull EconomyMethod economyMethod = EconomyMethod.getDefault();
 
     /**
      * Creates a new instance of the Economy class.
@@ -44,6 +48,17 @@ public final class ExperienceEconomy implements Economy {
                              final Configuration configuration) {
         this.plugin = plugin;
         this.accountManager = accountManager;
+        this.reloadConfiguration(configuration);
+        ConfigurationConsumerRegistry.register(this);
+    }
+
+    /**
+     * Called when the configuration is reloaded. Sets the state of the consumer based on the new configuration.
+     *
+     * @param configuration The configuration.
+     */
+    @Override
+    public void reloadConfiguration(@NotNull Configuration configuration) {
         this.economyMethod = configuration.economyMethod.value();
     }
 
@@ -308,12 +323,10 @@ public final class ExperienceEconomy implements Economy {
     public EconomyResponse withdrawPlayer(final OfflinePlayer player, final double amount) {
         final Account account = this.accountManager.getAccount(player.getUniqueId());
         if (account == null) {
-            return new EconomyResponse(0D, 0D, EconomyResponse.ResponseType.FAILURE,
-                    I18n.tr("economy.account_not_found"));
+            return new EconomyResponse(0D, 0D, EconomyResponse.ResponseType.FAILURE, "");
         }
         if (amount < 0.0D) {
-            return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE,
-                    I18n.tr("economy.negative_withdrawal"));
+            return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE, "");
         }
         final BigDecimal decimalAmount = BigDecimal.valueOf(amount);
         if (account.has(decimalAmount)) {
@@ -377,16 +390,13 @@ public final class ExperienceEconomy implements Economy {
     public EconomyResponse depositPlayer(final OfflinePlayer player, final double amount) {
         final Account account = this.accountManager.getAccount(player.getUniqueId());
         if (account == null) {
-            return new EconomyResponse(0D, 0D, EconomyResponse.ResponseType.FAILURE,
-                    I18n.tr("economy.account_not_found"));
+            return new EconomyResponse(0D, 0D, EconomyResponse.ResponseType.FAILURE, "");
         }
         if (amount < 0.0D) {
-            return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE,
-                    I18n.tr("economy.negative_deposit"));
+            return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE, "");
         }
         account.deposit(BigDecimal.valueOf(amount));
-        return new EconomyResponse(amount, account.getBalance().doubleValue(), EconomyResponse.ResponseType.SUCCESS,
-                I18n.tr("economy.successful_deposit"));
+        return new EconomyResponse(amount, account.getBalance().doubleValue(), EconomyResponse.ResponseType.SUCCESS, "");
     }
 
     /**

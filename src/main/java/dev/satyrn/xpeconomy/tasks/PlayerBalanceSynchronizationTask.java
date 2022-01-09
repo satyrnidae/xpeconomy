@@ -7,11 +7,15 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.logging.Level;
 
 public final class PlayerBalanceSynchronizationTask extends BukkitRunnable {
+    // The plugin instance
     private final transient Plugin plugin;
+    // The player to synchronize
     private final transient Player player;
+    // The account to synchronize
     private final transient Account account;
 
     public PlayerBalanceSynchronizationTask(final Plugin plugin, final Player player, final Account account) {
@@ -36,9 +40,9 @@ public final class PlayerBalanceSynchronizationTask extends BukkitRunnable {
         final int level = player.getLevel();
         final float progress = player.getExp();
 
-        final BigDecimal currentXPBalance = PlayerXPUtils.getTotalXPValue(level, progress);
-        this.plugin.getLogger().log(Level.FINE,
-                String.format("[Tasks] Setting player account balance to \"%s\"", currentXPBalance.doubleValue()));
+        final BigInteger currentXPBalance = PlayerXPUtils.getTotalXPValue(level, progress);
+        this.plugin.getLogger().log(Level.FINER,
+                String.format("[Scheduled Task] Setting player account balance to \"%s\"", currentXPBalance.doubleValue()));
         this.account.setBalanceRaw(currentXPBalance, false);
     }
 }

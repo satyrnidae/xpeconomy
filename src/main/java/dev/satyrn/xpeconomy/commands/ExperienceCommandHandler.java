@@ -1,40 +1,31 @@
 package dev.satyrn.xpeconomy.commands;
 
-import dev.satyrn.xpeconomy.api.commands.CommandHandler;
-import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.api.commands.VaultCommandHandler;
 import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
-import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public final class ExperienceCommandHandler extends CommandHandler {
-    private final @NotNull AccountManager accountManager;
-    private final @NotNull EconomyMethod economyMethod;
-
+public final class ExperienceCommandHandler extends VaultCommandHandler {
     /**
      * Initializes a new command handler with the permissions manager instance.
      *
      * @param permission The permission manager instance.
      */
-    public ExperienceCommandHandler(@NotNull Permission permission,
-                                    @NotNull AccountManager accountManager,
-                                    @NotNull EconomyMethod economyMethod) {
-        super(permission);
-        this.accountManager = accountManager;
-        this.economyMethod = economyMethod;
+    public ExperienceCommandHandler(final @NotNull Plugin plugin, final @NotNull Permission permission) {
+        super(plugin, permission);
     }
 
     /**
@@ -64,9 +55,8 @@ public final class ExperienceCommandHandler extends CommandHandler {
                     if (result.isPresent()) {
                         final Player target = result.get();
 
-                        final BigDecimal totalXPValue = PlayerXPUtils.getTotalXPValue(target.getLevel(), target.getExp()).setScale(0, RoundingMode.DOWN);
-                        final BigDecimal currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(
-                                BigDecimal.valueOf(target.getLevel()), BigDecimal.valueOf(target.getExp())).setScale(0, RoundingMode.DOWN);
+                        final BigInteger totalXPValue = PlayerXPUtils.getTotalXPValue(target.getLevel(), target.getExp());
+                        final BigInteger currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(BigInteger.valueOf(target.getLevel()), BigDecimal.valueOf(target.getExp()));
                         final DecimalFormat formatter = new DecimalFormat("#,##0");
 
                         // Check if the player can check the balance of the target.
@@ -79,9 +69,9 @@ public final class ExperienceCommandHandler extends CommandHandler {
                                     target.getLevel(),
                                     I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"),
                                     formatter.format(currentLevelProgress),
-                                    I18n.tr(currentLevelProgress.compareTo(BigDecimal.ONE) == 0 ? "experience.point" : "experience.point.plural"),
+                                    I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"),
                                     formatter.format(totalXPValue),
-                                    I18n.tr(totalXPValue.compareTo(BigDecimal.ONE) == 0 ? "experience.point" : "experience.point.plural")));
+                                    I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
                         } else {
                             if (!this.getPermission().has(player, "xpeconomy.experience.others")) {
                                 sender.sendMessage(I18n.tr("command.experience.permission.others"));
@@ -94,33 +84,33 @@ public final class ExperienceCommandHandler extends CommandHandler {
                                         target.getLevel(),
                                         I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"),
                                         formatter.format(currentLevelProgress),
-                                        I18n.tr(currentLevelProgress.compareTo(BigDecimal.ONE) == 0 ? "experience.point" : "experience.point.plural"),
+                                        I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"),
                                         formatter.format(totalXPValue),
-                                        I18n.tr(totalXPValue.compareTo(BigDecimal.ONE) == 0 ? "experience.point" : "experience.point.plural")));
+                                        I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
                             }
                         }
                     } else {
-                        sender.sendMessage(I18n.tr("command.generic.invalid_target", args[playerArgIndex]));
+                        sender.sendMessage(I18n.tr("command.generic.invalidTarget", args[playerArgIndex]));
                     }
                 } else {
-                    final BigDecimal totalXPValue = PlayerXPUtils.getTotalXPValue(player.getLevel(), player.getExp()).setScale(0, RoundingMode.DOWN);
-                    final BigDecimal currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(
-                            BigDecimal.valueOf(player.getLevel()), BigDecimal.valueOf(player.getExp())).setScale(0, RoundingMode.DOWN);
+                    final BigInteger totalXPValue = PlayerXPUtils.getTotalXPValue(player.getLevel(), player.getExp());
+                    final BigInteger currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(
+                            BigInteger.valueOf(player.getLevel()), BigDecimal.valueOf(player.getExp()));
                     final DecimalFormat formatter = new DecimalFormat("#,##0");
                     sender.sendMessage(I18n.tr("command.experience.result",
                             player.getLevel(),
                             I18n.tr(player.getLevel() == 1 ? "experience.level" : "experience.level.plural"),
                             formatter.format(currentLevelProgress),
-                            I18n.tr(currentLevelProgress.compareTo(BigDecimal.ONE) == 0 ? "experience.point" : "experience.point.plural"),
+                            I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"),
                             formatter.format(totalXPValue),
-                            I18n.tr(totalXPValue.compareTo(BigDecimal.ONE) == 0 ? "experience.point" : "experience.point.plural")));
+                            I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
                 }
             } else {
                 sender.sendMessage(I18n.tr("command.experience.permission"));
             }
         } else {
             if (args.length < playerArgIndex + 1) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_sender.non_player"));
+                sender.sendMessage(I18n.tr("command.generic.invalidSender.nonPlayer"));
             } else if (args.length > playerArgIndex + 1) {
                 sender.sendMessage(I18n.tr("command.generic.usage", this.getUsage(sender, command)));
             } else {
@@ -128,9 +118,9 @@ public final class ExperienceCommandHandler extends CommandHandler {
                 if (result.isPresent()) {
                     final Player target = result.get();
 
-                    final BigDecimal totalXPValue = PlayerXPUtils.getTotalXPValue(target.getLevel(), target.getExp()).setScale(0, RoundingMode.DOWN);
-                    final BigDecimal currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(
-                            BigDecimal.valueOf(target.getLevel()), BigDecimal.valueOf(target.getExp())).setScale(0, RoundingMode.DOWN);
+                    final BigInteger totalXPValue = PlayerXPUtils.getTotalXPValue(target.getLevel(), target.getExp());
+                    final BigInteger currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(
+                            BigInteger.valueOf(target.getLevel()), BigDecimal.valueOf(target.getExp()));
                     final DecimalFormat formatter = new DecimalFormat("#,##0");
 
                     sender.sendMessage(I18n.tr("command.experience.result.others",
@@ -138,11 +128,11 @@ public final class ExperienceCommandHandler extends CommandHandler {
                             target.getLevel(),
                             I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"),
                             formatter.format(currentLevelProgress),
-                            I18n.tr(currentLevelProgress.compareTo(BigDecimal.ONE) == 0 ? "experience.point" : "experience.point.plural"),
+                            I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"),
                             formatter.format(totalXPValue),
-                            I18n.tr(totalXPValue.compareTo(BigDecimal.ONE) == 0 ? "experience.point" : "experience.point.plural")));
+                            I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
                 } else {
-                    sender.sendMessage(I18n.tr("command.generic.invalid_target", args[playerArgIndex]));
+                    sender.sendMessage(I18n.tr("command.generic.invalidTarget", args[playerArgIndex]));
                 }
             }
         }
@@ -163,7 +153,7 @@ public final class ExperienceCommandHandler extends CommandHandler {
      * to default to the command executor
      */
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    public @NotNull List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         final int playerArgIndex = "xpeconomy".equalsIgnoreCase(command.getName()) ? 2 : 1;
         final List<String> completionOptions = new ArrayList<>();
 
@@ -184,8 +174,15 @@ public final class ExperienceCommandHandler extends CommandHandler {
         return completionOptions;
     }
 
+    /**
+     * Gets the command usage.
+     *
+     * @param sender The command sender.
+     * @param command The command.
+     * @return The command usage.
+     */
     @Override
-    protected final @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
+    protected @NotNull String getUsage(final @NotNull CommandSender sender, final @NotNull Command command) {
         if ("xpeconomy".equalsIgnoreCase(command.getName())) {
             if (sender instanceof Player) {
                 return I18n.tr("command.experience.usage.subcommand");

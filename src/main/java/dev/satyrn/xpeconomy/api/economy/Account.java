@@ -3,10 +3,14 @@ package dev.satyrn.xpeconomy.api.economy;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.UUID;
 
 /**
- * Represents a player account. Handles all XP operations.
+ * Represents an economy account. Handles all XP operations.
+ *
+ * @author Isabel Maskrey
+ * @since 1.0-SNAPSHOT
  */
 public interface Account {
     /**
@@ -44,7 +48,7 @@ public interface Account {
      *
      * @return The raw experience point balance.
      */
-    @NotNull BigDecimal getBalanceRaw();
+    @NotNull BigInteger getBalanceRaw();
 
     /**
      * Sets the balance on the account and optionally updates the player's XP value.
@@ -62,7 +66,7 @@ public interface Account {
      * @param updateXPValue If true, also updates the player's XP value to match.
      * @return The account instance.
      */
-    @NotNull Account setBalanceRaw(final @NotNull BigDecimal value, final boolean updateXPValue);
+    @NotNull Account setBalanceRaw(final @NotNull BigInteger value, final boolean updateXPValue);
 
     /**
      * Checks whether the account can withdraw a given amount.

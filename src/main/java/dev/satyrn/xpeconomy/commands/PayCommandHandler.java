@@ -1,18 +1,18 @@
 package dev.satyrn.xpeconomy.commands;
 
-import dev.satyrn.xpeconomy.api.commands.CommandHandler;
+import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
-import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,25 +24,23 @@ import java.util.regex.Pattern;
 /**
  * Handles the Pay command and subcommand.
  */
-public final class PayCommandHandler extends CommandHandler {
-    /**
-     * The account manager instance.
-     */
-    private final transient @NotNull AccountManager accountManager;
-    private final transient @NotNull EconomyMethod economyMethod;
-
+public final class PayCommandHandler extends AccountCommandHandler {
+    // The pattern to match a double.
     private static final @NotNull Pattern DOUBLE_PATTERN = Pattern.compile("\\d*(\\.\\d+)?");
 
     /**
      * Creates a new pay command handler.
-     * @param accountManager The account manager instance.
-     * @param permission The permission manager instance.
+     *
+     * @param plugin The plugin instance
+     * @param permission The permission manager instance
+     * @param accountManager The account manager
+     * @param configuration The configuration instance
      */
-    public PayCommandHandler(@NotNull final AccountManager accountManager, @NotNull final Permission permission,
-                             @NotNull final EconomyMethod economyMethod) {
-        super(permission);
-        this.accountManager = accountManager;
-        this.economyMethod = economyMethod;
+    public PayCommandHandler(final @NotNull Plugin plugin,
+                             final @NotNull Permission permission,
+                             final @NotNull AccountManager accountManager,
+                             final @NotNull Configuration configuration) {
+        super(plugin, permission, accountManager, configuration);
     }
 
     /**
@@ -67,9 +65,9 @@ public final class PayCommandHandler extends CommandHandler {
             } else if (!this.getPermission().has(sender, "xpeconomy.pay")) {
                 sender.sendMessage(I18n.tr("command.pay.permission"));
             } else if (!DOUBLE_PATTERN.matcher(args[isSubCommand ? 2 : 1]).matches()) {
-                sender.sendMessage(I18n.tr("command.pay.invalid_amount", args[isSubCommand ? 2 : 1]));
+                sender.sendMessage(I18n.tr("command.pay.invalidAmount", args[isSubCommand ? 2 : 1]));
             } else {
-                final BigDecimal payment = this.economyMethod.scale(BigDecimal.valueOf(
+                final BigDecimal payment = this.getEconomyMethod().scale(BigDecimal.valueOf(
                         Double.parseDouble(args[isSubCommand ? 2 : 1])));
                 final String targetName = args[isSubCommand ? 1 : 0];
                 final Optional<OfflinePlayer> result = Commands.getPlayer(targetName);
@@ -77,34 +75,34 @@ public final class PayCommandHandler extends CommandHandler {
                     final OfflinePlayer target = result.get();
                     final UUID senderId = ((Player)sender).getUniqueId();
                     if (target.getUniqueId() != senderId) {
-                        Account senderAccount = this.accountManager.getAccount(senderId);
+                        Account senderAccount = this.getAccountManager().getAccount(senderId);
                         if (senderAccount != null) {
                             if (senderAccount.has(payment)) {
-                                Account targetAccount = this.accountManager.getAccount(target.getUniqueId());
+                                Account targetAccount = this.getAccountManager().getAccount(target.getUniqueId());
                                 if (targetAccount != null) {
                                     senderAccount.withdraw(payment);
                                     targetAccount.deposit(payment);
                                     sender.sendMessage(I18n.tr("command.pay.result", target.getName(),
-                                            this.economyMethod.toString(payment, true)));
+                                            this.getEconomyMethod().toString(payment, true)));
                                 } else {
-                                    sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account",
+                                    sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount",
                                             target.getName()));
                                 }
                             } else {
-                                sender.sendMessage(I18n.tr("command.pay.insufficient_balance"));
+                                sender.sendMessage(I18n.tr("command.pay.insufficientBalance"));
                             }
                         } else {
-                            sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+                            sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
                         }
                     } else {
-                        sender.sendMessage(I18n.tr("command.pay.invalid_target"));
+                        sender.sendMessage(I18n.tr("command.pay.invalidTarget"));
                     }
                 } else {
-                    sender.sendMessage(I18n.tr("command.generic.invalid_target", targetName));
+                    sender.sendMessage(I18n.tr("command.generic.invalidTarget", targetName));
                 }
             }
         } else {
-            sender.sendMessage(I18n.tr("command.pay.invalid_sender"));
+            sender.sendMessage(I18n.tr("command.pay.invalidSender"));
         }
 
         return true;
@@ -133,7 +131,7 @@ public final class PayCommandHandler extends CommandHandler {
                 completionOptions.addAll(Commands.getPlayerNames());
             }
         } else if (args.length == (isSubCommand ? 3 : 2)) {
-            completionOptions.add(this.economyMethod.toString(BigDecimal.ZERO));
+            completionOptions.add(this.getEconomyMethod().toString(BigDecimal.ZERO));
         }
 
         return completionOptions;

@@ -1,19 +1,21 @@
 package dev.satyrn.xpeconomy.commands;
 
-import dev.satyrn.xpeconomy.api.commands.CommandHandler;
+import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
+import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
-import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,22 +24,20 @@ import java.util.Optional;
  * Implements a command which can be used to transfer balance from one player to another.
  * @author Isabel Maskrey (saturniidae)
  */
-public final class TransferCommandHandler extends CommandHandler {
-    /** The account manager instance. */
-    private final transient @NotNull AccountManager accountManager;
-    /** The current economy method. */
-    private final transient @NotNull EconomyMethod economyMethod;
-
+public final class TransferCommandHandler extends AccountCommandHandler {
     /**
      * Creates a new instance of the remove command handler.
-     * @param permission The permissions manager object.
-     * @param accountManager The account manager instance.
-     * @param economyMethod The current economy method.
+     *
+     * @param plugin The plugin instance
+     * @param permission The permission manager object
+     * @param accountManager The account manager instance
+     * @param configuration The current economy method
      */
-    public TransferCommandHandler(@NotNull Permission permission, @NotNull AccountManager accountManager, @NotNull EconomyMethod economyMethod) {
-        super(permission);
-        this.accountManager = accountManager;
-        this.economyMethod = economyMethod;
+    public TransferCommandHandler(final @NotNull Plugin plugin,
+                                  final @NotNull Permission permission,
+                                  final @NotNull AccountManager accountManager,
+                                  final @NotNull Configuration configuration) {
+        super(plugin, permission, accountManager, configuration);
     }
 
     /**
@@ -79,12 +79,12 @@ public final class TransferCommandHandler extends CommandHandler {
 
         final BigDecimal amount;
         try {
-            if (this.economyMethod.getScale() > 0) {
+            if (this.getEconomyMethod().getScale() > 0) {
                 final double amountArg = Double.parseDouble(args[amountArgIndex]);
-                amount = this.economyMethod.scale(BigDecimal.valueOf(amountArg));
+                amount = this.getEconomyMethod().scale(BigDecimal.valueOf(amountArg));
             } else {
                 final int amountArg = Integer.parseInt(args[amountArgIndex]);
-                amount = this.economyMethod.scale(BigDecimal.valueOf(amountArg));
+                amount = this.getEconomyMethod().scale(BigDecimal.valueOf(amountArg));
             }
         } catch (NumberFormatException nfe) {
             sender.sendMessage(I18n.tr("command.balance.transfer.parameter.amount.invalid", args[amountArgIndex]));
@@ -99,7 +99,7 @@ public final class TransferCommandHandler extends CommandHandler {
             final String targetName = args[playerArgIndex];
             final Optional<OfflinePlayer> result = Commands.getPlayer(targetName);
             if (result.isEmpty()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target", targetName));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget", targetName));
                 return true;
             }
             target = result.get();
@@ -121,7 +121,7 @@ public final class TransferCommandHandler extends CommandHandler {
             final String targetName = args[playerArgIndex];
             final Optional<OfflinePlayer> result = Commands.getPlayer(targetName);
             if (result.isEmpty()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target", targetName));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget", targetName));
                 return true;
             }
             recipient = result.get();
@@ -132,35 +132,35 @@ public final class TransferCommandHandler extends CommandHandler {
             return true;
         }
 
-        final Account account = this.accountManager.getAccount(target.getUniqueId());
+        final Account account = this.getAccountManager().getAccount(target.getUniqueId());
         if (account == null) {
             if (sender instanceof final Player player
                     && player.getUniqueId() == target.getUniqueId()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+                sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", target.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName()));
             }
             return true;
         }
 
-        final Account recipientAccount = this.accountManager.getAccount(recipient.getUniqueId());
+        final Account recipientAccount = this.getAccountManager().getAccount(recipient.getUniqueId());
         if (recipientAccount == null) {
             if (sender instanceof final Player player
                     && player.getUniqueId() == target.getUniqueId()) {
-                sender.sendMessage(I18n.tr("command.generic.invalid_sender.no_account"));
+                sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalid_target.no_account", recipient.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", recipient.getName()));
             }
             return true;
         }
 
-        final BigDecimal rawAccountBalance = account.getBalanceRaw();
+        final BigInteger rawAccountBalance = account.getBalanceRaw();
 
         if (amount.compareTo(account.getBalance()) > 0) {
-            sender.sendMessage(I18n.tr("command.balance.transfer.failure.low_balance",
+            sender.sendMessage(I18n.tr("command.balance.transfer.failure.lowBalance",
                     target.getName(),
-                    this.economyMethod.toString(account.getBalance(), true),
-                    this.economyMethod.toString(amount, true)));
+                    this.getEconomyMethod().toString(account.getBalance(), true),
+                    this.getEconomyMethod().toString(amount, true)));
             return true;
         }
 
@@ -207,9 +207,9 @@ public final class TransferCommandHandler extends CommandHandler {
 
         if (!(sender instanceof Player) || this.getPermission().has(sender, "xpeconomy.balance.transfer")) {
             if (args.length == amountArgIndex + 1) { // Are we currently editing the amount argument?
-                completionOptions.add(this.economyMethod.toString(BigDecimal.ZERO));
-                completionOptions.add(this.economyMethod.toString(BigDecimal.ONE));
-                completionOptions.add(this.economyMethod.toString(BigDecimal.TEN));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.ZERO));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.ONE));
+                completionOptions.add(this.getEconomyMethod().toString(BigDecimal.TEN));
             } else if (args.length == playerArgIndex + 1 || args.length == recipientArgIndex + 1) { // Are we currently editing the player argument?
                 completionOptions.addAll(Commands.getPlayerNames());
             }

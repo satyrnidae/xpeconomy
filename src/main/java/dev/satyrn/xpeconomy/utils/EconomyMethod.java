@@ -1,9 +1,12 @@
 package dev.satyrn.xpeconomy.utils;
 
 import dev.satyrn.xpeconomy.lang.I18n;
+import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
@@ -22,7 +25,7 @@ public enum EconomyMethod {
     /**
      * Economy method for per-hundred XP points.
      */
-    PER_HUNDRED(2, RoundingMode.DOWN, "currency.perhundred");
+    PER_HUNDRED(2, RoundingMode.DOWN, "currency.perHundred");
 
     /**
      * The decimal scale of the economy method.
@@ -118,5 +121,49 @@ public enum EconomyMethod {
 
     public @NotNull String getCurrencyNamePlural() {
         return I18n.tr(this.economyNameKey + ".name.plural");
+    }
+
+    /**
+     * Converts raw XP values into economy values.
+     *
+     * @param rawBalance The raw XP value.
+     * @return The economy value.
+     */
+    public @NotNull BigDecimal fromRawBalance(final BigInteger rawBalance) {
+        switch (this) {
+            case LEVELS -> {
+                return new BigDecimal(PlayerXPUtils.toLevelProgress(rawBalance).getValue0());
+            }
+            case PER_HUNDRED -> {
+                return new BigDecimal(rawBalance).divide(BigDecimal.valueOf(100), MathContext.DECIMAL128).setScale(0, RoundingMode.DOWN);
+            }
+            default -> {
+                return new BigDecimal(rawBalance);
+            }
+        }
+    }
+
+    /**
+     * Converts economy values into raw XP values.
+     *
+     * @param balance The current economy value.
+     * @param rawBalance The current XP value. Used to properly add levels. Can be set to 0 if it should not be used.
+     * @return The raw XP value.
+     */
+    public @NotNull BigInteger toRawBalance(final BigDecimal balance, final BigInteger rawBalance) {
+        switch (this) {
+            case LEVELS -> {
+                final Pair<BigInteger, BigDecimal> levelProgress = PlayerXPUtils.toLevelProgress(rawBalance);
+                final BigInteger totalXPForCurrentLevel = PlayerXPUtils.getCurrentLevelProgress(levelProgress.getValue0(), levelProgress.getValue1());
+                final int newLevel = balance.setScale(0, RoundingMode.DOWN).intValue();
+                return PlayerXPUtils.getXPForLevel(BigInteger.valueOf(newLevel)).add(totalXPForCurrentLevel);
+            }
+            case PER_HUNDRED -> {
+                return balance.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.DOWN).toBigInteger();
+            }
+            default -> {
+                return balance.toBigInteger();
+            }
+        }
     }
 }

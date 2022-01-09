@@ -1,11 +1,12 @@
 package dev.satyrn.xpeconomy.api.storage;
 
 import org.jetbrains.annotations.Nullable;
-
 import java.sql.Connection;
 
 /**
  * Manages connections to a data source.
+ *
+ * @since 1.0-SNAPSHOT
  */
 public interface ConnectionManager {
     /**

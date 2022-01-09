@@ -1,0 +1,151 @@
+[
+  {
+    "name": "about",
+    "playerUsageKeys": [
+      "command.about.usage"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.about.usage"
+    ]
+  },
+  {
+    "name": "add",
+    "permission": "xpeconomy.balance.add",
+    "playerUsageKeys": [
+      "command.balance.add.usage",
+      "command.balance.add.usage.subcommand"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.balance.add.usage.console",
+      "command.balance.add.usage.subcommand.console"
+    ],
+    "aliases": [
+      "addbal",
+      "addbalance"
+    ]
+  },
+  {
+    "name": "balance",
+    "permission": "xpeconomy.balance",
+    "playerUsageKeys": [
+      "command.balance.usage",
+      "command.balance.usage.subcommand"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.balance.usage.console",
+      "command.balance.usage.subcommand.console"
+    ],
+    "aliases": [
+      "bal"
+    ]
+  },
+  {
+    "name": "deduct",
+    "permission": "xpeconomy.balance.deduct",
+    "playerUsageKeys": [
+      "command.balance.deduct.usage",
+      "command.balance.deduct.usage.subcommand"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.balance.deduct.usage.console",
+      "command.balance.deduct.usage.subcommand.console"
+    ],
+    "aliases": [
+      "deductbal",
+      "deductbalance",
+      "remove",
+      "removebal",
+      "removebalance"
+    ]
+  },
+  {
+    "name": "experience",
+    "permission": "xpeconomy.experience",
+    "playerUsageKeys": [
+      "command.experience.usage",
+      "command.experience.usage.subcommand"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.experience.usage.console",
+      "command.experience.usage.subcommand.console"
+    ],
+    "aliases": [
+      "exp",
+      "xp"
+    ]
+  },
+  {
+    "name": "help",
+    "playerUsageKeys": [
+      "command.help.usage"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.help.usage"
+    ]
+  },
+  {
+    "name": "pay",
+    "permission": "xpeconomy.pay",
+    "allowNonPlayers": false,
+    "playerUsageKeys": [
+      "command.pay.usage",
+      "command.pay.usage.subcommand"
+    ]
+  },
+  {
+    "name": "reload",
+    "permission": "xpeconomy.reload",
+    "playerUsageKeys": [
+      "command.reload.usage"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.reload.usage"
+    ]
+  },
+  {
+    "name": "set",
+    "permission": "xpeconomy.balance.set",
+    "playerUsageKeys": [
+      "command.balance.set.usage",
+      "command.balance.set.usage.subcommand"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.balance.set.usage.console",
+      "command.balance.set.usage.subcommand.console"
+    ],
+    "aliases": [
+      "setbal",
+      "setbalance"
+    ]
+  },
+  {
+    "name": "sync",
+    "permission": "xpeconomy.balance.sync",
+    "playerUsageKeys": [
+      "command.balance.sync.usage",
+      "command.balance.sync.usage.subcommand"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.balance.sync.usage.console",
+      "command.balance.sync.usage.subcommand.console"
+    ],
+    "aliases": [
+      "syncxp"
+    ]
+  },
+  {
+    "name": "transfer",
+    "permission": "xpeconomy.balance.transfer",
+    "playerUsageKeys": [
+      "command.balance.transfer.usage",
+      "command.balance.transfer.usage.subcommand"
+    ],
+    "nonPlayerUsageKeys": [
+      "command.balance.transfer.usage",
+      "command.balance.transfer.usage.subcommand"
+    ],
+    "aliases": [
+      "xfer"
+    ]
+  }
+]

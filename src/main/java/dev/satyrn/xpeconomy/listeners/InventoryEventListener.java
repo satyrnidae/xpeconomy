@@ -17,23 +17,13 @@ import org.bukkit.plugin.Plugin;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public final class InventoryEventListener implements Listener {
-    /**
-     * The account manager instance.
-     */
-    private final transient AccountManager accountManager;
-    private final transient Plugin plugin;
-
+public record InventoryEventListener(Plugin plugin, AccountManager accountManager) implements Listener {
     /**
      * Initializes the player event listener.
      *
      * @param accountManager The account manager instance.
      */
-    public InventoryEventListener(final Plugin plugin,
-                                  final AccountManager accountManager) {
-        this.plugin = plugin;
-        this.accountManager = accountManager;
-    }
+    public InventoryEventListener { }
 
     /**
      * Handles the event that is called when a user enchants an item.
@@ -44,8 +34,8 @@ public final class InventoryEventListener implements Listener {
     public void onEnchantItem(EnchantItemEvent e) {
         if (e.isCancelled()) return;
 
-        this.plugin.getLogger().log(Level.FINE,
-                "[Events] Enchanting table usage scheduled account balance synchronization.");
+        this.plugin.getLogger().log(Level.FINER,
+                "[Event] Enchanting table usage scheduled account balance synchronization.");
         final UUID uuid = e.getEnchanter().getUniqueId();
         new PlayerBalanceSynchronizationTask(this.plugin, e.getEnchanter(), this.accountManager.getAccount(uuid))
                 .runTaskLater(this.plugin, 1L);
@@ -73,8 +63,8 @@ public final class InventoryEventListener implements Listener {
         if (rawSlot == view.convertSlot(rawSlot) && rawSlot == 2) {
             final ItemStack result = anvilInventory.getItem(rawSlot);
             if (result != null) {
-                this.plugin.getLogger().log(Level.FINE,
-                        "[Events] Anvil usage scheduled account balance synchronization.");
+                this.plugin.getLogger().log(Level.FINER,
+                        "[Event] Anvil usage scheduled account balance synchronization.");
 
                 new PlayerBalanceSynchronizationTask(this.plugin, player,
                         this.accountManager.getAccount(player.getUniqueId())).runTaskLater(this.plugin, 1L);

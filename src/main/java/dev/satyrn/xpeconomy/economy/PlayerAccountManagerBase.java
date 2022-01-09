@@ -1,8 +1,10 @@
 package dev.satyrn.xpeconomy.economy;
 
+import dev.satyrn.xpeconomy.api.configuration.ConfigurationConsumer;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
+import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import org.bukkit.OfflinePlayer;
@@ -11,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -18,28 +21,36 @@ import java.util.UUID;
 /**
  * Manages player accounts.
  */
-public abstract class AccountManagerBase implements AccountManager {
-    /**
-     * The list of player accounts.
-     */
+public abstract class PlayerAccountManagerBase implements AccountManager, ConfigurationConsumer {
+    // The list of player accounts.
     protected final transient List<PlayerAccount> accounts = new ArrayList<>();
-    /**
-     * The economy method to use.
-     */
-    protected final transient EconomyMethod economyMethod;
-    /**
-     * The starting balance of new accounts.
-     */
-    protected final transient double startingBalance;
+    // The economy method to use.
+    protected transient EconomyMethod economyMethod;
+    // The starting balance of new accounts.
+    protected transient BigDecimal startingBalance;
+    // The configuration instance.
+    protected transient Configuration configuration;
 
     /**
      * Creates a new instance of an account manager.
      *
      * @param configuration The configuration manager.
      */
-    protected AccountManagerBase(final Configuration configuration) {
+    protected PlayerAccountManagerBase(final @NotNull Configuration configuration) {
+        this.reloadConfiguration(configuration);
+        ConfigurationConsumerRegistry.register(this);
+    }
+
+    /**
+     * Called when the configuration is reloaded. Sets the state of the consumer based on the new configuration.
+     *
+     * @param configuration The configuration.
+     */
+    @Override
+    public void reloadConfiguration(@NotNull Configuration configuration) {
+        this.configuration = configuration;
         this.economyMethod = configuration.economyMethod.value();
-        this.startingBalance = configuration.startingValue.value();
+        this.startingBalance = configuration.startingBalance.value();
     }
 
     /**
@@ -63,15 +74,15 @@ public abstract class AccountManagerBase implements AccountManager {
     public @Nullable Account createAccount(final @Nullable OfflinePlayer player) {
         PlayerAccount account = null;
         if (player != null) {
-            account = new PlayerAccount(this.economyMethod, player.getUniqueId());
+            account = new PlayerAccount(this.configuration, player.getUniqueId());
             final Player onlinePlayer = player.getPlayer();
             if (onlinePlayer != null) {
-                BigDecimal playerBalance = PlayerXPUtils.getPlayerXPTotal(player.getUniqueId());
-                BigDecimal startingBalance = this.getStartingBalance();
-                if (playerBalance.compareTo(startingBalance) > 0) {
+                BigInteger rawStartingBalance = this.economyMethod.toRawBalance(this.startingBalance, BigInteger.ZERO);
+                BigInteger playerBalance = PlayerXPUtils.getPlayerXPTotal(player.getUniqueId());
+                if (playerBalance.compareTo(rawStartingBalance) > 0) {
                     account.setBalanceRaw(playerBalance, false);
                 } else {
-                    account.setBalanceRaw(startingBalance, true);
+                    account.setBalanceRaw(rawStartingBalance, true);
                 }
             }
 
@@ -87,22 +98,12 @@ public abstract class AccountManagerBase implements AccountManager {
      * @return The account instance.
      */
     @Override
-    public Account getAccount(final @NotNull UUID uuid) {
+    public @Nullable Account getAccount(final @NotNull UUID uuid) {
         for (PlayerAccount account : this.accounts) {
             if (account.getUUID().equals(uuid)) {
                 return account;
             }
         }
         return null;
-    }
-
-    /**
-     * Gets the starting value for the account.
-     *
-     * @return The starting value for the account.
-     */
-    private BigDecimal getStartingBalance() {
-        return BigDecimal.valueOf(this.startingBalance)
-                .setScale(this.economyMethod.getScale(), this.economyMethod.getRoundingMode());
     }
 }
