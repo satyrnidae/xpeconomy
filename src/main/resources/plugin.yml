@@ -221,3 +221,12 @@ permissions:
   xpeconomy.reload:
      default: op
      description: Allows a user to reload the plugin's configuration file.
+  xpeconomy.bottle.fill:
+    default: true
+    description: Allows a user to fill glass bottles with experience
+  xpeconomy.bottle.use:
+    default: true
+    description: Allows a user to use a Bottle o' Enchanting without throwing it
+  xpeconomy.bottle.refund:
+    default: true
+    description: Allows a user to collect glass bottles from thrown Bottles o' Enchanting

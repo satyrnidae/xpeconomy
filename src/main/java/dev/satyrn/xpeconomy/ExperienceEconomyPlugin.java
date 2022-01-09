@@ -72,7 +72,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
         // Setup and register the permission handler.
         final Permission permissionProvider = this.initializePermissionsProvider();
 
-        this.registerEvents(this.accountManager, configuration);
+        this.registerEvents(this.accountManager, permissionProvider, configuration);
         this.registerCommands(this.accountManager, permissionProvider, configuration);
     }
 
@@ -176,12 +176,12 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
      *
      * @param accountManager The account manager instance.
      */
-    private void registerEvents(final AccountManager accountManager, final Configuration configuration) {
+    private void registerEvents(final AccountManager accountManager, final Permission permission, final Configuration configuration) {
         this.getServer().getPluginManager().registerEvents(new InventoryEventListener(this, accountManager), this);
         this.getServer().getPluginManager().registerEvents(new PlayerEventListener(this, accountManager), this);
         this.getServer().getPluginManager().registerEvents(new WorldEventListener(this, accountManager), this);
         this.getServer()
                 .getPluginManager()
-                .registerEvents(new ExperienceBottleEventListener(this, accountManager, configuration), this);
+                .registerEvents(new ExperienceBottleEventListener(this, accountManager, permission, configuration), this);
     }
 }

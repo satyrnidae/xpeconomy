@@ -8,6 +8,7 @@ import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -22,6 +23,7 @@ import org.bukkit.event.entity.ExpBottleEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.projectiles.ProjectileSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +41,7 @@ import java.util.logging.Level;
 public final class ExperienceBottleEventListener implements Listener, ConfigurationConsumer {
     private final @NotNull Plugin plugin;
     private final @NotNull AccountManager accountManager;
+    private final @NotNull Permission permission;
     private boolean enabled;
     private boolean throwBottles;
     private int pointsPerBottle;
@@ -47,9 +50,11 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
 
     public ExperienceBottleEventListener(final @NotNull Plugin plugin,
                                          final @NotNull AccountManager accountManager,
+                                         final @NotNull Permission permission,
                                          final @NotNull Configuration configuration) {
         this.plugin = plugin;
         this.accountManager = accountManager;
+        this.permission = permission;
         this.reloadConfiguration(configuration);
         ConfigurationConsumerRegistry.register(this);
     }
@@ -84,6 +89,9 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
             return;
         }
         if (this.throwBottles && !player.isSneaking()) {
+            return;
+        }
+        if (!this.permission.has(player, "xpeconomy.bottle.use")) {
             return;
         }
         this.plugin.getLogger().log(Level.FINER, String.format("[Event] Player %s used an experience bottle for %s experience points.", player.getName(), this.pointsPerBottle));
@@ -125,8 +133,11 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
 
         if (this.refundThrownBottles) {
             final @NotNull ThrownExpBottle bottleEntity = event.getEntity();
-            bottleEntity.getWorld().dropItem(bottleEntity.getLocation(), new ItemStack(Material.GLASS_BOTTLE, 1));
-            this.plugin.getLogger().log(Level.FINER, "[Event] Refunded a thrown bottle.");
+            final @Nullable ProjectileSource source = bottleEntity.getShooter();
+            if (source instanceof final Player player && this.permission.has(player, "xpeconomy.bottle.refund")) {
+                bottleEntity.getWorld().dropItem(bottleEntity.getLocation(), new ItemStack(Material.GLASS_BOTTLE, 1));
+                this.plugin.getLogger().log(Level.FINER, "[Event] Refunded a thrown bottle.");
+            }
         }
     }
 
@@ -146,10 +157,13 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
         if (clickedBlock == null || clickedBlock.getType() != this.fillInteractBlock) {
             return;
         }
+        final @NotNull Player player = event.getPlayer();
+        if (!this.permission.has(player, "xpeconomy.bottle.fill")) {
+            return;
+        }
         event.setUseInteractedBlock(Event.Result.DENY);
         event.setCancelled(true);
 
-        final @NotNull Player player = event.getPlayer();
         final @Nullable Account account = this.accountManager.getAccount(player.getUniqueId());
         if (account != null) {
             final BigInteger currentBalance = account.getBalanceRaw();
