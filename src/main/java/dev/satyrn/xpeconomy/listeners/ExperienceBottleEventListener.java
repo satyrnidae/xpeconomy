@@ -104,9 +104,7 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
             final @NotNull HashMap<Integer, ItemStack> droppedItems = player.getInventory().addItem(bottleStack);
             if (!droppedItems.isEmpty()) {
                 for (int key : droppedItems.keySet()) {
-                    player.getWorld().dropItemNaturally(player.getLocation(), droppedItems.get(key), item -> {
-                        item.setThrower(player.getUniqueId());
-                    });
+                    player.getWorld().dropItemNaturally(player.getLocation(), droppedItems.get(key), item -> item.setThrower(player.getUniqueId()));
                 }
             }
         }

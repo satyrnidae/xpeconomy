@@ -133,7 +133,7 @@ public final class MySQLAccountManager extends PlayerAccountManagerBase {
             if (!resultSet.next()) {
                 this.plugin.getLogger().log(Level.FINER, "[Storage] Account table was not present in the MySQL data source. Creating a new table...");
                 final String createTable = String.format(
-                        "CREATE TABLE %s (uuid VARBINARY(16) NOT NULL, balance NUMERIC NOT NULL, update_date TIMESTAMP NOT NULL PRIMARY KEY (uuid))",
+                        "CREATE TABLE %s (uuid VARBINARY(16) NOT NULL, balance NUMERIC NOT NULL, update_date TIMESTAMP NOT NULL, PRIMARY KEY (uuid))",
                         tableName);
                 try (final Statement statement = connection.createStatement()) {
                     statement.execute(createTable);
