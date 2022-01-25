@@ -1,12 +1,9 @@
 package dev.satyrn.xpeconomy.economy;
 
 import com.google.common.collect.ImmutableList;
-import dev.satyrn.xpeconomy.api.configuration.ConfigurationConsumer;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.lang.I18n;
-import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -21,12 +18,12 @@ import java.util.List;
 /**
  * The XP Economy handler.
  */
-public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
+@SuppressWarnings("ClassCanBeRecord")
+public final class ExperienceEconomy implements Economy {
     /**
      * Response for unimplemented methods
      */
-    private static final EconomyResponse NOT_IMPLEMENTED = new EconomyResponse(0D, 0D,
-            EconomyResponse.ResponseType.NOT_IMPLEMENTED, "");
+    private static final EconomyResponse NOT_IMPLEMENTED = new EconomyResponse(0D, 0D, EconomyResponse.ResponseType.NOT_IMPLEMENTED, "");
     /**
      * The parent plugin instance.
      */
@@ -36,7 +33,7 @@ public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
      */
     private final transient AccountManager accountManager;
     // The economy method to use.
-    private transient @NotNull EconomyMethod economyMethod = EconomyMethod.getDefault();
+    private final transient @NotNull Configuration configuration;
 
     /**
      * Creates a new instance of the Economy class.
@@ -44,22 +41,15 @@ public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
      * @param plugin         The parent plugin instance.
      * @param accountManager The account manager instance.
      */
-    public ExperienceEconomy(final Plugin plugin, final AccountManager accountManager,
-                             final Configuration configuration) {
+    public ExperienceEconomy(final Plugin plugin, final AccountManager accountManager, final @NotNull Configuration configuration) {
         this.plugin = plugin;
         this.accountManager = accountManager;
-        this.reloadConfiguration(configuration);
-        ConfigurationConsumerRegistry.register(this);
+        this.configuration = configuration;
     }
 
-    /**
-     * Called when the configuration is reloaded. Sets the state of the consumer based on the new configuration.
-     *
-     * @param configuration The configuration.
-     */
-    @Override
-    public void reloadConfiguration(@NotNull Configuration configuration) {
-        this.economyMethod = configuration.economyMethod.value();
+    // Gets the current economy method
+    private EconomyMethod getEconomyMethod() {
+        return this.configuration.economyMethod.value();
     }
 
     /**
@@ -101,19 +91,19 @@ public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
      */
     @Override
     public int fractionalDigits() {
-        return this.economyMethod.getScale();
+        return this.getEconomyMethod().getScale();
     }
 
     /**
-     * Format amount into a human readable String This provides translation into
+     * Format amount into a human-readable String This provides translation into
      * economy specific formatting to improve consistency between plugins.
      *
      * @param amount to format
-     * @return Human readable string describing amount
+     * @return Human-readable string describing amount
      */
     @Override
     public String format(final double amount) {
-        return this.economyMethod.toString(BigDecimal.valueOf(amount));
+        return this.getEconomyMethod().toString(BigDecimal.valueOf(amount));
     }
 
     /**
@@ -124,7 +114,7 @@ public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
      */
     @Override
     public String currencyNamePlural() {
-        return this.economyMethod.getCurrencyNamePlural();
+        return this.getEconomyMethod().getCurrencyNamePlural();
     }
 
     /**
@@ -135,7 +125,7 @@ public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
      */
     @Override
     public String currencyNameSingular() {
-        return this.economyMethod.getCurrencyName();
+        return this.getEconomyMethod().getCurrencyName();
     }
 
     /**
@@ -276,7 +266,7 @@ public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
      * @param playerName to check
      * @param worldName  to check with
      * @param amount     to check for
-     * @deprecated As of VaultAPI 1.4 use @{link {@link #has(OfflinePlayer, String, double)} instead.
+     * @deprecated As of VaultAPI 1.4 use {@link #has(OfflinePlayer, String, double)} instead.
      */
     @Override
     @Deprecated
@@ -326,12 +316,14 @@ public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
             return new EconomyResponse(0D, 0D, EconomyResponse.ResponseType.FAILURE, "");
         }
         if (amount < 0.0D) {
-            return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE, "");
+            return new EconomyResponse(0D, account.getBalance()
+                    .doubleValue(), EconomyResponse.ResponseType.FAILURE, "");
         }
         final BigDecimal decimalAmount = BigDecimal.valueOf(amount);
         if (account.has(decimalAmount)) {
             account.withdraw(decimalAmount);
-            return new EconomyResponse(amount, account.getBalance().doubleValue(), EconomyResponse.ResponseType.SUCCESS, "");
+            return new EconomyResponse(amount, account.getBalance()
+                    .doubleValue(), EconomyResponse.ResponseType.SUCCESS, "");
         }
         return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE, "");
     }
@@ -393,10 +385,12 @@ public final class ExperienceEconomy implements Economy, ConfigurationConsumer {
             return new EconomyResponse(0D, 0D, EconomyResponse.ResponseType.FAILURE, "");
         }
         if (amount < 0.0D) {
-            return new EconomyResponse(0D, account.getBalance().doubleValue(), EconomyResponse.ResponseType.FAILURE, "");
+            return new EconomyResponse(0D, account.getBalance()
+                    .doubleValue(), EconomyResponse.ResponseType.FAILURE, "");
         }
         account.deposit(BigDecimal.valueOf(amount));
-        return new EconomyResponse(amount, account.getBalance().doubleValue(), EconomyResponse.ResponseType.SUCCESS, "");
+        return new EconomyResponse(amount, account.getBalance()
+                .doubleValue(), EconomyResponse.ResponseType.SUCCESS, "");
     }
 
     /**

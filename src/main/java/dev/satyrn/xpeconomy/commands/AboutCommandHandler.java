@@ -1,7 +1,7 @@
 package dev.satyrn.xpeconomy.commands;
 
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.VaultCommandHandler;
-import dev.satyrn.xpeconomy.lang.I18n;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -22,7 +22,7 @@ public final class AboutCommandHandler extends VaultCommandHandler {
     /**
      * Initializes a new command handler with the permission manager instance.
      *
-     * @param plugin The plugin instance.
+     * @param plugin     The plugin instance.
      * @param permission The permission manager instance.
      */
     public AboutCommandHandler(final @NotNull Plugin plugin, final @NotNull Permission permission) {
@@ -62,7 +62,7 @@ public final class AboutCommandHandler extends VaultCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used

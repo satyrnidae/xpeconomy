@@ -1,11 +1,9 @@
 package dev.satyrn.xpeconomy.listeners;
 
-import dev.satyrn.xpeconomy.api.configuration.ConfigurationConsumer;
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.lang.I18n;
-import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import net.milkbowl.vault.permission.Permission;
@@ -38,43 +36,42 @@ import java.util.logging.Level;
  * @author Isabel Maskrey
  * @since 1.0-SNAPSHOT
  */
-public final class ExperienceBottleEventListener implements Listener, ConfigurationConsumer {
+public final class ExperienceBottleEventListener implements Listener {
     private final @NotNull Plugin plugin;
     private final @NotNull AccountManager accountManager;
     private final @NotNull Permission permission;
-    private boolean enabled;
-    private boolean throwBottles;
-    private int pointsPerBottle;
-    private Material fillInteractBlock;
-    private boolean refundThrownBottles;
+    private final @NotNull Configuration.BottleOptionsContainer bottleOptions;
 
-    public ExperienceBottleEventListener(final @NotNull Plugin plugin,
-                                         final @NotNull AccountManager accountManager,
-                                         final @NotNull Permission permission,
-                                         final @NotNull Configuration configuration) {
+    public ExperienceBottleEventListener(final @NotNull Plugin plugin, final @NotNull AccountManager accountManager, final @NotNull Permission permission, final @NotNull Configuration configuration) {
         this.plugin = plugin;
         this.accountManager = accountManager;
         this.permission = permission;
-        this.reloadConfiguration(configuration);
-        ConfigurationConsumerRegistry.register(this);
+        this.bottleOptions = configuration.bottleOptions;
     }
 
-    @Override
-    public void reloadConfiguration(final @NotNull Configuration configuration) {
-        this.enabled = configuration.bottleOptions.enabled.value();
-        this.throwBottles = configuration.bottleOptions.throwBottles.value();
-        this.pointsPerBottle = configuration.bottleOptions.pointsPerBottle.value();
-        this.fillInteractBlock = configuration.bottleOptions.fillInteractBlock.value();
-        this.refundThrownBottles = configuration.bottleOptions.refundThrownBottles.value();
-        if (this.pointsPerBottle < 1 && this.enabled) {
-            this.plugin.getLogger().log(Level.INFO, "[Configuration] Points per bottle was less than 1, setting to default value 7 instead.");
-            this.pointsPerBottle = 7;
-        }
+    private boolean isDisabled() {
+        return !this.bottleOptions.enabled.value();
+    }
+
+    private boolean getThrowBottles() {
+        return this.bottleOptions.throwBottles.value();
+    }
+
+    private int getPointsPerBottle() {
+        return this.bottleOptions.pointsPerBottle.value();
+    }
+
+    private boolean getRefundThrownBottles() {
+        return this.bottleOptions.refundThrownBottles.value();
+    }
+
+    private Material getFillInteractBlock() {
+        return this.bottleOptions.fillInteractBlock.value();
     }
 
     @EventHandler
     public void onExperienceBottleUsed(final @NotNull PlayerInteractEvent event) {
-        if (!this.enabled) {
+        if (this.isDisabled()) {
             return;
         }
         if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
@@ -88,13 +85,14 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
         if (usedItem == null) {
             return;
         }
-        if (this.throwBottles && !player.isSneaking()) {
+        if (this.getThrowBottles() && !player.isSneaking()) {
             return;
         }
         if (!this.permission.has(player, "xpeconomy.bottle.use")) {
             return;
         }
-        this.plugin.getLogger().log(Level.FINER, String.format("[Event] Player %s used an experience bottle for %s experience points.", player.getName(), this.pointsPerBottle));
+        this.plugin.getLogger()
+                .log(Level.FINER, String.format("[Event] Player %s used an experience bottle for %s experience points.", player.getName(), this.getPointsPerBottle()));
         event.setCancelled(true);
 
         // Decrement inventory
@@ -104,7 +102,8 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
             final @NotNull HashMap<Integer, ItemStack> droppedItems = player.getInventory().addItem(bottleStack);
             if (!droppedItems.isEmpty()) {
                 for (int key : droppedItems.keySet()) {
-                    player.getWorld().dropItemNaturally(player.getLocation(), droppedItems.get(key), item -> item.setThrower(player.getUniqueId()));
+                    player.getWorld()
+                            .dropItemNaturally(player.getLocation(), droppedItems.get(key), item -> item.setThrower(player.getUniqueId()));
                 }
             }
         }
@@ -113,26 +112,27 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
 
         final Account account = this.accountManager.getAccount(player.getUniqueId());
         if (account != null) {
-            final BigInteger newBalance = account.getBalanceRaw().add(BigInteger.valueOf(this.pointsPerBottle));
+            final BigInteger newBalance = account.getBalanceRaw().add(BigInteger.valueOf(this.getPointsPerBottle()));
             account.setBalanceRaw(newBalance, true);
         } else {
-            final BigInteger newXpTotal = PlayerXPUtils.getPlayerXPTotal(player).add(BigInteger.valueOf(this.pointsPerBottle));
+            final BigInteger newXpTotal = PlayerXPUtils.getPlayerXPTotal(player)
+                    .add(BigInteger.valueOf(this.getPointsPerBottle()));
             PlayerXPUtils.setPlayerXPTotal(player, newXpTotal);
         }
     }
 
     @EventHandler
     public void onExperienceBottleBreak(final @NotNull ExpBottleEvent event) {
-        if (!this.enabled || event.isCancelled()) {
+        if (this.isDisabled() || event.isCancelled()) {
             return;
         }
-        this.plugin.getLogger().log(Level.FINER, "[Event] Setting thrown XP bottle experience points.");
-        event.setExperience(this.pointsPerBottle);
+        this.plugin.getLogger().log(Level.FINEST, "[Event] Setting thrown XP bottle experience points.");
+        event.setExperience(this.getPointsPerBottle());
 
-        if (this.refundThrownBottles) {
+        if (this.getRefundThrownBottles()) {
             final @NotNull ThrownExpBottle bottleEntity = event.getEntity();
             final @Nullable ProjectileSource source = bottleEntity.getShooter();
-            if (source instanceof final Player player && this.permission.has(player, "xpeconomy.bottle.refund")) {
+            if (source instanceof final Player player && this.permission.has(player, "xpeconomy.bottle.refund") && player.getGameMode() != GameMode.CREATIVE) {
                 bottleEntity.getWorld().dropItem(bottleEntity.getLocation(), new ItemStack(Material.GLASS_BOTTLE, 1));
                 this.plugin.getLogger().log(Level.FINER, "[Event] Refunded a thrown bottle.");
             }
@@ -141,7 +141,7 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
 
     @EventHandler
     public void onBottleUsed(final @NotNull PlayerInteractEvent event) {
-        if (!this.enabled || this.fillInteractBlock == Material.AIR) {
+        if (this.isDisabled() || this.getFillInteractBlock() == Material.AIR) {
             return;
         }
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
@@ -152,11 +152,11 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
             return;
         }
         final @Nullable Block clickedBlock = event.getClickedBlock();
-        if (clickedBlock == null || clickedBlock.getType() != this.fillInteractBlock) {
+        if (clickedBlock == null || clickedBlock.getType() != this.getFillInteractBlock()) {
             return;
         }
         final @NotNull Player player = event.getPlayer();
-        if (!this.permission.has(player, "xpeconomy.bottle.fill")) {
+        if (player.isSneaking() || !this.permission.has(player, "xpeconomy.bottle.fill")) {
             return;
         }
         event.setUseInteractedBlock(Event.Result.DENY);
@@ -165,35 +165,32 @@ public final class ExperienceBottleEventListener implements Listener, Configurat
         final @Nullable Account account = this.accountManager.getAccount(player.getUniqueId());
         if (account != null) {
             final BigInteger currentBalance = account.getBalanceRaw();
-            if (currentBalance.compareTo(BigInteger.valueOf(this.pointsPerBottle)) < 0) {
-                player.sendMessage(I18n.tr("bottle.fill.lowBalance",
-                        EconomyMethod.POINTS.toString(new BigDecimal(currentBalance), true),
-                        EconomyMethod.POINTS.toString(BigDecimal.valueOf(this.pointsPerBottle), true)));
+            if (currentBalance.compareTo(BigInteger.valueOf(this.getPointsPerBottle())) < 0) {
+                player.sendMessage(I18n.tr("bottle.fill.lowBalance", EconomyMethod.POINTS.toString(new BigDecimal(currentBalance), true), EconomyMethod.POINTS.toString(BigDecimal.valueOf(this.getPointsPerBottle()), true)));
                 return;
             }
-            account.setBalanceRaw(currentBalance.subtract(BigInteger.valueOf(this.pointsPerBottle)), true);
+            account.setBalanceRaw(currentBalance.subtract(BigInteger.valueOf(this.getPointsPerBottle())), true);
         } else {
             final BigInteger currentXpTotal = PlayerXPUtils.getPlayerXPTotal(player);
-            if (currentXpTotal.compareTo(BigInteger.valueOf(this.pointsPerBottle)) < 0) {
-                player.sendMessage(I18n.tr("bottle.fill.lowBalance",
-                        EconomyMethod.POINTS.toString(new BigDecimal(currentXpTotal), true),
-                        EconomyMethod.POINTS.toString(BigDecimal.valueOf(this.pointsPerBottle), true)));
+            if (currentXpTotal.compareTo(BigInteger.valueOf(this.getPointsPerBottle())) < 0) {
+                player.sendMessage(I18n.tr("bottle.fill.lowBalance", EconomyMethod.POINTS.toString(new BigDecimal(currentXpTotal), true), EconomyMethod.POINTS.toString(BigDecimal.valueOf(this.getPointsPerBottle()), true)));
                 return;
             }
-            PlayerXPUtils.setPlayerXPTotal(player, currentXpTotal.subtract(BigInteger.valueOf(this.pointsPerBottle)));
+            PlayerXPUtils.setPlayerXPTotal(player, currentXpTotal.subtract(BigInteger.valueOf(this.getPointsPerBottle())));
         }
 
-        this.plugin.getLogger().log(Level.FINER, String.format("[Event] Player %s filled an experience bottle at %s with %s experience points.", player.getName(), this.fillInteractBlock, this.pointsPerBottle));
+        this.plugin.getLogger()
+                .log(Level.FINEST, String.format("[Event] Player %s filled an experience bottle at %s with %s experience points.", player.getName(), this.getFillInteractBlock(), this.getPointsPerBottle()));
 
         if (player.getGameMode() != GameMode.CREATIVE) {
             usedItem.setAmount(usedItem.getAmount() - 1);
+        }
 
-            final @NotNull ItemStack expBottleStack = new ItemStack(Material.EXPERIENCE_BOTTLE, 1);
-            final HashMap<Integer, ItemStack> droppedItems = player.getInventory().addItem(expBottleStack);
-            if (!droppedItems.isEmpty()) {
-                for (int key : droppedItems.keySet()) {
-                    player.getWorld().dropItemNaturally(player.getLocation(), droppedItems.get(key));
-                }
+        final @NotNull ItemStack expBottleStack = new ItemStack(Material.EXPERIENCE_BOTTLE, 1);
+        final HashMap<Integer, ItemStack> droppedItems = player.getInventory().addItem(expBottleStack);
+        if (!droppedItems.isEmpty()) {
+            for (int key : droppedItems.keySet()) {
+                player.getWorld().dropItemNaturally(player.getLocation(), droppedItems.get(key));
             }
         }
 

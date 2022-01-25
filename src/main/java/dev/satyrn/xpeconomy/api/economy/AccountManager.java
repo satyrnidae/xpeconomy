@@ -15,13 +15,11 @@ import java.util.UUID;
 public interface AccountManager {
     /**
      * Loads player account data from storage.
-     *
      */
     void load();
 
     /**
      * Saves player account data to storage.
-     *
      */
     void save();
 
@@ -39,8 +37,7 @@ public interface AccountManager {
      * @param player The player instance.
      * @return The new account.
      */
-    @SuppressWarnings("UnusedReturnValue")
-    @Nullable Account createAccount(final @NotNull OfflinePlayer player);
+    @NotNull Account createAccount(final @NotNull OfflinePlayer player);
 
     /**
      * Gets an account with a specific player UUID.

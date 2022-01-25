@@ -23,7 +23,8 @@ public record InventoryEventListener(Plugin plugin, AccountManager accountManage
      *
      * @param accountManager The account manager instance.
      */
-    public InventoryEventListener { }
+    public InventoryEventListener {
+    }
 
     /**
      * Handles the event that is called when a user enchants an item.
@@ -32,13 +33,14 @@ public record InventoryEventListener(Plugin plugin, AccountManager accountManage
      */
     @EventHandler
     public void onEnchantItem(EnchantItemEvent e) {
-        if (e.isCancelled()) return;
+        if (e.isCancelled()) {
+            return;
+        }
 
-        this.plugin.getLogger().log(Level.FINER,
-                "[Event] Enchanting table usage scheduled account balance synchronization.");
+        this.plugin.getLogger()
+                .log(Level.FINER, "[Event] Enchanting table usage scheduled account balance synchronization.");
         final UUID uuid = e.getEnchanter().getUniqueId();
-        new PlayerBalanceSynchronizationTask(this.plugin, e.getEnchanter(), this.accountManager.getAccount(uuid))
-                .runTaskLater(this.plugin, 1L);
+        new PlayerBalanceSynchronizationTask(this.plugin, e.getEnchanter(), this.accountManager.getAccount(uuid)).runTaskLater(this.plugin, 1L);
     }
 
     /**
@@ -48,14 +50,20 @@ public record InventoryEventListener(Plugin plugin, AccountManager accountManage
      */
     @EventHandler
     public void onAnvilUsed(InventoryClickEvent e) {
-        if (e.isCancelled()) return;
+        if (e.isCancelled()) {
+            return;
+        }
         final HumanEntity whoClicked = e.getWhoClicked();
 
-        if (!(whoClicked instanceof final Player player)) return;
+        if (!(whoClicked instanceof final Player player)) {
+            return;
+        }
 
         final Inventory inventory = e.getInventory();
 
-        if (!(inventory instanceof final AnvilInventory anvilInventory)) return;
+        if (!(inventory instanceof final AnvilInventory anvilInventory)) {
+            return;
+        }
 
         final InventoryView view = e.getView();
         final int rawSlot = e.getRawSlot();
@@ -63,11 +71,10 @@ public record InventoryEventListener(Plugin plugin, AccountManager accountManage
         if (rawSlot == view.convertSlot(rawSlot) && rawSlot == 2) {
             final ItemStack result = anvilInventory.getItem(rawSlot);
             if (result != null) {
-                this.plugin.getLogger().log(Level.FINER,
-                        "[Event] Anvil usage scheduled account balance synchronization.");
+                this.plugin.getLogger()
+                        .log(Level.FINER, "[Event] Anvil usage scheduled account balance synchronization.");
 
-                new PlayerBalanceSynchronizationTask(this.plugin, player,
-                        this.accountManager.getAccount(player.getUniqueId())).runTaskLater(this.plugin, 1L);
+                new PlayerBalanceSynchronizationTask(this.plugin, player, this.accountManager.getAccount(player.getUniqueId())).runTaskLater(this.plugin, 1L);
             }
         }
     }

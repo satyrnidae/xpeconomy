@@ -1,9 +1,8 @@
 package dev.satyrn.xpeconomy.commands;
 
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.VaultCommandHandler;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.lang.I18n;
-import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -19,14 +18,18 @@ import java.util.logging.Level;
  * Models a command which allows a user to trigger a configuration reload.
  */
 public class ReloadCommandHandler extends VaultCommandHandler {
+    // The configuration.
+    private final @NotNull Configuration configuration;
+
     /**
-     * Initializes a new command handler with the permissions manager instance.
+     * Initializes a new command handler with the permission manager instance.
      *
-     * @param plugin The plugin instance.
+     * @param plugin     The plugin instance.
      * @param permission The permission manager instance.
      */
-    public ReloadCommandHandler(@NotNull Plugin plugin, @NotNull Permission permission) {
+    public ReloadCommandHandler(@NotNull Plugin plugin, @NotNull Permission permission, final @NotNull Configuration configuration) {
         super(plugin, permission);
+        this.configuration = configuration;
     }
 
     /**
@@ -48,15 +51,6 @@ public class ReloadCommandHandler extends VaultCommandHandler {
 
             this.getPlugin().reloadConfig();
 
-            final Configuration configuration = new Configuration(this.getPlugin());
-            if (configuration.debug.value()) {
-                this.getPlugin().getLogger().setLevel(Level.ALL);
-            } else {
-                this.getPlugin().getLogger().setLevel(Level.INFO);
-            }
-
-            ConfigurationConsumerRegistry.reloadConfiguration(configuration);
-
             sender.sendMessage(I18n.tr("command.reload.complete"));
         } else {
             sender.sendMessage(I18n.tr("command.reload.permission"));
@@ -68,7 +62,7 @@ public class ReloadCommandHandler extends VaultCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used

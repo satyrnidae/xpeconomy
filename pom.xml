@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>dev.satyrn.xpeconomy</groupId>
-    <artifactId>ExperienceEconomy</artifactId>
-    <version>1.0.1</version>
+    <groupId>dev.satyrn</groupId>
+    <artifactId>experience-economy</artifactId>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>ExperienceEconomy</name>
@@ -16,9 +16,30 @@
         <java.version>1.17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <url>https://satyrn.dev/</url>
+    <url>https://satyrn.dev/sites/xpeconomy</url>
+    <scm>
+        <tag>GitHub</tag>
+        <url>https://github.com/satyrnidae/xpeconomy</url>
+    </scm>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://raw.githubusercontent.com/satyrnidae/xpeconomy/main/LICENSE</url>
+        </license>
+    </licenses>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/satyrnidae/xpeconomy/issues</url>
+    </issueManagement>
 
     <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>3.5.1</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -40,6 +61,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>dev.satyrn:papermc-api</include>
+                                    <include>org.javatuples:javatuples</include>
+                                    <include>org.bstats:*</include>
+                                </includes>
+                            </artifactSet>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -47,6 +75,7 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/*.MF</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -59,19 +88,34 @@
                                     <pattern>dev.satyrn.papermc.api</pattern>
                                     <shadedPattern>dev.satyrn.xpeconomy.api.common</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>org.bstats</pattern>
+                                    <shadedPattern>dev.satyrn.xpeconomy.metrics</shadedPattern>
+                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
         </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh</artifactId>
-                <version>3.5.1</version>
-            </extension>
-        </extensions>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -86,6 +130,29 @@
             </resource>
         </resources>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <distributionManagement>
+        <repository>
+            <id>ftp.satyrn.dev</id>
+            <name>Artifact Deployment</name>
+            <url>sftp://ftp.satyrn.dev:22/maven</url>
+        </repository>
+        <site>
+            <id>ftp.satyrn.dev</id>
+            <name>Site deployments</name>
+            <url>sftp://ftp.satyrn.dev:22/sites/${project.artifactId}/</url>
+        </site>
+    </distributionManagement>
 
     <pluginRepositories>
         <pluginRepository>
@@ -102,6 +169,10 @@
         <repository>
             <id>papermc-repo</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
             <id>sonatype</id>
@@ -148,15 +219,13 @@
         <dependency>
             <groupId>dev.satyrn</groupId>
             <artifactId>papermc-api</artifactId>
-            <version>1.3-SNAPSHOT</version>
+            <version>1.8.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>2.2.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
-
-
-    <distributionManagement>
-        <repository>
-            <id>ftp.satyrn.dev</id>
-            <url>sftp://ftp.satyrn.dev:22/maven</url>
-        </repository>
-    </distributionManagement>
 </project>

@@ -1,10 +1,10 @@
 package dev.satyrn.xpeconomy.commands;
 
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
@@ -107,7 +107,7 @@ public final class TransferCommandHandler extends AccountCommandHandler {
                     && player.getUniqueId() != target.getUniqueId()) {
                 if (permission.has(target.getPlayer(), "xpeconomy.balance.transfer.exempt")
                         && !permission.has(player, "xpeconomy.balance.transfer.exempt.bypass")) {
-                    sender.sendMessage(I18n.tr("xpeconomy.balance.transfer.permission.exempt", target.getName()));
+                    sender.sendMessage(I18n.tr("xpeconomy.balance.transfer.permission.exempt", target.getName() == null ? target.getUniqueId() : target.getName()));
                     return true;
                 }
             }
@@ -138,7 +138,7 @@ public final class TransferCommandHandler extends AccountCommandHandler {
                     && player.getUniqueId() == target.getUniqueId()) {
                 sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName() == null ? target.getUniqueId() : target.getName()));
             }
             return true;
         }
@@ -149,7 +149,7 @@ public final class TransferCommandHandler extends AccountCommandHandler {
                     && player.getUniqueId() == target.getUniqueId()) {
                 sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", recipient.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", recipient.getName() == null ? recipient.getUniqueId() : recipient.getName()));
             }
             return true;
         }
@@ -158,7 +158,7 @@ public final class TransferCommandHandler extends AccountCommandHandler {
 
         if (amount.compareTo(account.getBalance()) > 0) {
             sender.sendMessage(I18n.tr("command.balance.transfer.failure.lowBalance",
-                    target.getName(),
+                    target.getName() == null ? target.getUniqueId() : target.getName(),
                     this.getEconomyMethod().toString(account.getBalance(), true),
                     this.getEconomyMethod().toString(amount, true)));
             return true;
@@ -166,20 +166,20 @@ public final class TransferCommandHandler extends AccountCommandHandler {
 
         if (!account.withdraw(amount)) {
             sender.sendMessage(I18n.tr("command.balance.transfer.failure.withdraw",
-                    target.getName()));
+                    target.getName() == null ? account.getName() : target.getName()));
             return true;
         }
         if (!recipientAccount.deposit(amount)) {
             account.setBalanceRaw(rawAccountBalance, true);
             sender.sendMessage(I18n.tr("command.balance.transfer.failure.deposit",
-                    recipient.getName(),
-                    target.getName()));
+                    recipient.getName() == null ? recipientAccount.getName() : recipient.getName(),
+                    target.getName() == null ? account.getName() : target.getName()));
             return true;
         }
 
         sender.sendMessage(I18n.tr("command.balance.transfer.result",
-                target.getName(),
-                recipient.getName()));
+                target.getName() == null ? account.getName() : target.getName(),
+                recipient.getName() == null ? recipientAccount.getName() : recipient.getName()));
 
         return true;
     }
@@ -188,7 +188,7 @@ public final class TransferCommandHandler extends AccountCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used

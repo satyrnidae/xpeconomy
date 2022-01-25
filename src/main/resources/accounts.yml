@@ -1,4 +1,6 @@
 # Example accounts.yml file. Will be auto-generated.
+version: ${project.version}
 accounts:
-  - uuid: "cd674324-c9d9-33de-9941-c025f40dde11"
+  - uuid: a3b22515-bfe8-47c6-9fd4-ff4079ac01b4
     balance: 1057.0
+    name: satyrnidae

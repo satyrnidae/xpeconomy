@@ -26,8 +26,8 @@ Tired of currencies that you have to use commands to check? Want your players to
 - Fractional currency is only supported for the PER_HUNDRED economy type. LEVELS economy cannot support fractional currency due to scaling
 - Requires [Vault](https://dev.bukkit.org/projects/vault)
 
-### Upcoming Features
-- Custom .lang files
+### Metrics
+This plugin uses bStats to collect some analytics about your current system setup and plugin configuration. Metrics collection is optional. If you installed a previous version of the plugin, you are already opted-out of metrics collection. If you want to opt-out on version 1.3.0 or higher, set the "metrics" option in the configuration file to "false", or comment or remove the line. Thanks!
 
 ## Configuration
 

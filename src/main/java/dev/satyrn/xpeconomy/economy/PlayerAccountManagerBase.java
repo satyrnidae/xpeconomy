@@ -1,14 +1,13 @@
 package dev.satyrn.xpeconomy.economy;
 
-import dev.satyrn.xpeconomy.api.configuration.ConfigurationConsumer;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,15 +20,12 @@ import java.util.UUID;
 /**
  * Manages player accounts.
  */
-public abstract class PlayerAccountManagerBase implements AccountManager, ConfigurationConsumer {
+public abstract class PlayerAccountManagerBase implements AccountManager {
     // The list of player accounts.
     protected final transient List<PlayerAccount> accounts = new ArrayList<>();
-    // The economy method to use.
-    protected transient EconomyMethod economyMethod;
-    // The starting balance of new accounts.
-    protected transient BigDecimal startingBalance;
-    // The configuration instance.
-    protected transient Configuration configuration;
+
+    // The configuration.
+    protected transient final @NotNull Configuration configuration;
 
     /**
      * Creates a new instance of an account manager.
@@ -37,20 +33,7 @@ public abstract class PlayerAccountManagerBase implements AccountManager, Config
      * @param configuration The configuration manager.
      */
     protected PlayerAccountManagerBase(final @NotNull Configuration configuration) {
-        this.reloadConfiguration(configuration);
-        ConfigurationConsumerRegistry.register(this);
-    }
-
-    /**
-     * Called when the configuration is reloaded. Sets the state of the consumer based on the new configuration.
-     *
-     * @param configuration The configuration.
-     */
-    @Override
-    public void reloadConfiguration(@NotNull Configuration configuration) {
         this.configuration = configuration;
-        this.economyMethod = configuration.economyMethod.value();
-        this.startingBalance = configuration.startingBalance.value();
     }
 
     /**
@@ -70,24 +53,29 @@ public abstract class PlayerAccountManagerBase implements AccountManager, Config
      * @param player The player instance.
      * @return The new account.
      */
+    @Contract("null -> fail")
     @Override
-    public @Nullable Account createAccount(final @Nullable OfflinePlayer player) {
-        PlayerAccount account = null;
-        if (player != null) {
-            account = new PlayerAccount(this.configuration, player.getUniqueId());
-            final Player onlinePlayer = player.getPlayer();
-            if (onlinePlayer != null) {
-                BigInteger rawStartingBalance = this.economyMethod.toRawBalance(this.startingBalance, BigInteger.ZERO);
-                BigInteger playerBalance = PlayerXPUtils.getPlayerXPTotal(player.getUniqueId());
-                if (playerBalance.compareTo(rawStartingBalance) > 0) {
-                    account.setBalanceRaw(playerBalance, false);
-                } else {
-                    account.setBalanceRaw(rawStartingBalance, true);
-                }
-            }
-
-            this.accounts.add(account);
+    public @NotNull Account createAccount(final @Nullable OfflinePlayer player) {
+        if (player == null) {
+            throw new IllegalArgumentException("Player cannot be null.");
         }
+        final PlayerAccount account = new PlayerAccount(this.configuration, player.getUniqueId());
+        if (player.getName() != null) {
+            account.setName(player.getName());
+        }
+        final Player onlinePlayer = player.getPlayer();
+        if (onlinePlayer != null) {
+            BigInteger rawStartingBalance = this.getEconomyMethod()
+                    .toRawBalance(this.getStartingBalance(), BigInteger.ZERO);
+            BigInteger playerBalance = PlayerXPUtils.getPlayerXPTotal(player.getUniqueId());
+            if (playerBalance.compareTo(rawStartingBalance) > 0) {
+                account.setBalanceRaw(playerBalance, false);
+            } else {
+                account.setBalanceRaw(rawStartingBalance, true);
+            }
+        }
+
+        this.accounts.add(account);
         return account;
     }
 
@@ -105,5 +93,23 @@ public abstract class PlayerAccountManagerBase implements AccountManager, Config
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the current economy method
+     *
+     * @return The current economy method.
+     */
+    protected EconomyMethod getEconomyMethod() {
+        return this.configuration.economyMethod.value();
+    }
+
+    /**
+     * Gets the starting balance for the account.
+     *
+     * @return The starting balance.
+     */
+    protected BigDecimal getStartingBalance() {
+        return this.configuration.startingBalance.value();
     }
 }

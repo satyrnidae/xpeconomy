@@ -14,6 +14,21 @@ import java.util.UUID;
  */
 public interface Account {
     /**
+     * Gets the account owner's name
+     *
+     * @return The name of the account owner.
+     */
+    @NotNull String getName();
+
+    /**
+     * Sets the account owner's name.
+     *
+     * @param value The new account owner name.
+     * @return The modified account.
+     */
+    @NotNull Account setName(final @NotNull String value);
+
+    /**
      * Gets the account owner's player UUID.
      *
      * @return The player UUID of the account owner.
@@ -54,7 +69,7 @@ public interface Account {
      * Sets the balance on the account and optionally updates the player's XP value.
      *
      * @param value         The new account balance.
-     * @param updateXPValue If true, also updates the player's XP value to match.
+     * @param updateXPValue If true, also updates the player's XP to match.
      * @return The account instance.
      */
     @NotNull Account setBalance(final @NotNull BigDecimal value, final boolean updateXPValue);
@@ -63,7 +78,7 @@ public interface Account {
      * Sets the raw balance value.
      *
      * @param value         The experience point balance.
-     * @param updateXPValue If true, also updates the player's XP value to match.
+     * @param updateXPValue If true, also updates the player's XP to match.
      * @return The account instance.
      */
     @NotNull Account setBalanceRaw(final @NotNull BigInteger value, final boolean updateXPValue);

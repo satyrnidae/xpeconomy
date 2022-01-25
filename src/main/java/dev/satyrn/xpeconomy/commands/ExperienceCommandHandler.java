@@ -1,7 +1,7 @@
 package dev.satyrn.xpeconomy.commands;
 
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.VaultCommandHandler;
-import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import net.milkbowl.vault.permission.Permission;
@@ -20,7 +20,7 @@ import java.util.Optional;
 
 public final class ExperienceCommandHandler extends VaultCommandHandler {
     /**
-     * Initializes a new command handler with the permissions manager instance.
+     * Initializes a new command handler with the permission manager instance.
      *
      * @param permission The permission manager instance.
      */
@@ -62,31 +62,19 @@ public final class ExperienceCommandHandler extends VaultCommandHandler {
                         // Check if the player can check the balance of the target.
                         // Players can check a specified player if the following is true:
                         // The target player is the sender player; or
-                        // The sender player has the check others permission and the target is not exempt, or
-                        // The sender player has the check others permission, the target is exempt, and the sender bypasses exempt checks.
+                        // The sender player has the "check others" permission and the target is not exempt, or
+                        // The sender player has the "check others" permission, the target is exempt, and the sender bypasses exempt checks.
                         if (target.getUniqueId() == player.getUniqueId()) {
-                            sender.sendMessage(I18n.tr("command.experience.result",
-                                    target.getLevel(),
-                                    I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"),
-                                    formatter.format(currentLevelProgress),
-                                    I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"),
-                                    formatter.format(totalXPValue),
-                                    I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
+                            sender.sendMessage(I18n.tr("command.experience.result", target.getLevel(), I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"), formatter.format(currentLevelProgress), I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"), formatter.format(totalXPValue), I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
                         } else {
                             if (!this.getPermission().has(player, "xpeconomy.experience.others")) {
                                 sender.sendMessage(I18n.tr("command.experience.permission.others"));
-                            } else if (this.getPermission().has(target, "xpeconomy.experience.exempt") &&
-                                    !this.getPermission().has(player, "xpeconomy.experience.exempt.bypass")) {
+                            } else if (this.getPermission()
+                                    .has(target, "xpeconomy.experience.exempt") && !this.getPermission()
+                                    .has(player, "xpeconomy.experience.exempt.bypass")) {
                                 sender.sendMessage(I18n.tr("command.experience.permission.exempt", target.getName()));
                             } else {
-                                sender.sendMessage(I18n.tr("command.experience.result.others",
-                                        target.getName(),
-                                        target.getLevel(),
-                                        I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"),
-                                        formatter.format(currentLevelProgress),
-                                        I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"),
-                                        formatter.format(totalXPValue),
-                                        I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
+                                sender.sendMessage(I18n.tr("command.experience.result.others", target.getName(), target.getLevel(), I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"), formatter.format(currentLevelProgress), I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"), formatter.format(totalXPValue), I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
                             }
                         }
                     } else {
@@ -94,16 +82,9 @@ public final class ExperienceCommandHandler extends VaultCommandHandler {
                     }
                 } else {
                     final BigInteger totalXPValue = PlayerXPUtils.getTotalXPValue(player.getLevel(), player.getExp());
-                    final BigInteger currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(
-                            BigInteger.valueOf(player.getLevel()), BigDecimal.valueOf(player.getExp()));
+                    final BigInteger currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(BigInteger.valueOf(player.getLevel()), BigDecimal.valueOf(player.getExp()));
                     final DecimalFormat formatter = new DecimalFormat("#,##0");
-                    sender.sendMessage(I18n.tr("command.experience.result",
-                            player.getLevel(),
-                            I18n.tr(player.getLevel() == 1 ? "experience.level" : "experience.level.plural"),
-                            formatter.format(currentLevelProgress),
-                            I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"),
-                            formatter.format(totalXPValue),
-                            I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
+                    sender.sendMessage(I18n.tr("command.experience.result", player.getLevel(), I18n.tr(player.getLevel() == 1 ? "experience.level" : "experience.level.plural"), formatter.format(currentLevelProgress), I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"), formatter.format(totalXPValue), I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
                 }
             } else {
                 sender.sendMessage(I18n.tr("command.experience.permission"));
@@ -119,18 +100,10 @@ public final class ExperienceCommandHandler extends VaultCommandHandler {
                     final Player target = result.get();
 
                     final BigInteger totalXPValue = PlayerXPUtils.getTotalXPValue(target.getLevel(), target.getExp());
-                    final BigInteger currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(
-                            BigInteger.valueOf(target.getLevel()), BigDecimal.valueOf(target.getExp()));
+                    final BigInteger currentLevelProgress = PlayerXPUtils.getCurrentLevelProgress(BigInteger.valueOf(target.getLevel()), BigDecimal.valueOf(target.getExp()));
                     final DecimalFormat formatter = new DecimalFormat("#,##0");
 
-                    sender.sendMessage(I18n.tr("command.experience.result.others",
-                            target.getName(),
-                            target.getLevel(),
-                            I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"),
-                            formatter.format(currentLevelProgress),
-                            I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"),
-                            formatter.format(totalXPValue),
-                            I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
+                    sender.sendMessage(I18n.tr("command.experience.result.others", target.getName(), target.getLevel(), I18n.tr(target.getLevel() == 1 ? "experience.level" : "experience.level.plural"), formatter.format(currentLevelProgress), I18n.tr(currentLevelProgress.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural"), formatter.format(totalXPValue), I18n.tr(totalXPValue.compareTo(BigInteger.ONE) == 0 ? "experience.point" : "experience.point.plural")));
                 } else {
                     sender.sendMessage(I18n.tr("command.generic.invalidTarget", args[playerArgIndex]));
                 }
@@ -143,7 +116,7 @@ public final class ExperienceCommandHandler extends VaultCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used
@@ -177,7 +150,7 @@ public final class ExperienceCommandHandler extends VaultCommandHandler {
     /**
      * Gets the command usage.
      *
-     * @param sender The command sender.
+     * @param sender  The command sender.
      * @param command The command.
      * @return The command usage.
      */

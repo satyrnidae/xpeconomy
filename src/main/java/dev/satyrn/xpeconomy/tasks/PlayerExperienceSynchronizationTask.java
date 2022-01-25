@@ -1,7 +1,6 @@
 package dev.satyrn.xpeconomy.tasks;
 
 import dev.satyrn.xpeconomy.api.economy.Account;
-import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -23,9 +22,9 @@ public final class PlayerExperienceSynchronizationTask extends BukkitRunnable {
     /**
      * Creates a new player experience synchronization task.
      *
-     * @param plugin The plugin instance.
+     * @param plugin   The plugin instance.
      * @param playerID The player ID.
-     * @param account The player's economy account
+     * @param account  The player's economy account
      */
     public PlayerExperienceSynchronizationTask(final Plugin plugin, final UUID playerID, final Account account) {
         this.plugin = plugin;

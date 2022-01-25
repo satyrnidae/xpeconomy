@@ -2,12 +2,14 @@ package dev.satyrn.xpeconomy.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -23,10 +25,12 @@ public final class Commands {
     /**
      * Do not instantiate this class.
      */
-    private Commands() {}
+    private Commands() {
+    }
 
     /**
      * Gets all player names from the online player list.
+     *
      * @return All player names from the online player list.
      */
     public static Collection<String> getPlayerNames() {
@@ -38,25 +42,8 @@ public final class Commands {
     }
 
     /**
-     * Gets a Player instance from a player name or uuid.
-     * @param target The target argument.
-     * @return The target entity.
-     */
-    public static @NotNull Optional<Entity> getTarget(final @NotNull String target) {
-        final Optional<Entity> entity;
-        if (UUID_PATTERN.matcher(target).matches()) {
-            final UUID uniqueID = UUID.fromString(target);
-            final Optional<Entity> player = Optional.ofNullable(Bukkit.getPlayer(uniqueID));
-            entity = player.or(() -> Optional.ofNullable(Bukkit.getEntity(uniqueID)));
-        } else {
-            entity = Optional.ofNullable(Bukkit.getPlayerExact(target));
-        }
-
-        return entity;
-    }
-
-    /**
      * Gets a target from all online players
+     *
      * @param target The target identifier.
      * @return An optional of player.
      */
@@ -65,7 +52,9 @@ public final class Commands {
         final Optional<? extends Player> onlinePlayer;
         if (UUID_PATTERN.matcher(target).matches()) {
             final UUID uuid = UUID.fromString(target);
-            onlinePlayer = players.stream().filter(player -> player.getUniqueId() == uuid && player.isOnline()).findFirst();
+            onlinePlayer = players.stream()
+                    .filter(player -> player.getUniqueId() == uuid && player.isOnline())
+                    .findFirst();
         } else {
             onlinePlayer = Optional.ofNullable(Bukkit.getPlayerExact(target));
         }
@@ -74,6 +63,7 @@ public final class Commands {
 
     /**
      * Gets a target from all players.
+     *
      * @param target The target identifier.
      * @return An optional of OfflinePlayer.
      */

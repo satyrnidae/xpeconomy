@@ -15,6 +15,7 @@ import java.util.logging.Level;
 public class WorldEventListener implements Listener {
     private final Plugin plugin;
     private final AccountManager accountManager;
+
     /**
      * Creates a new world event listener.
      *
@@ -23,7 +24,7 @@ public class WorldEventListener implements Listener {
      */
     public WorldEventListener(Plugin plugin, AccountManager accountManager) {
         this.plugin = plugin;
-        this.accountManager =  accountManager;
+        this.accountManager = accountManager;
     }
 
     /**
@@ -33,7 +34,7 @@ public class WorldEventListener implements Listener {
      */
     @EventHandler
     public void onWorldSave(WorldSaveEvent e) {
-            this.plugin.getLogger().log(Level.FINER, "[Event] World save triggered account data write to disk.");
-            new SaveAccountDataTask(this.plugin, this.accountManager).runTaskAsynchronously(this.plugin);
+        this.plugin.getLogger().log(Level.FINER, "[Event] World save triggered account data write to disk.");
+        new SaveAccountDataTask(this.plugin, this.accountManager).runTaskAsynchronously(this.plugin);
     }
 }

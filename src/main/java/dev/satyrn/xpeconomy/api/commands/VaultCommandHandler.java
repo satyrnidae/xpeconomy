@@ -16,7 +16,8 @@ public abstract class VaultCommandHandler extends CommandHandler {
     private final transient @NotNull Permission permission;
 
     /**
-     * Initializes a new command handler with the permissions manager instance.
+     * Initializes a new command handler with the permission manager instance.
+     *
      * @param permission The permission manager instance.
      */
     protected VaultCommandHandler(final @NotNull Plugin plugin, final @NotNull Permission permission) {
@@ -26,6 +27,7 @@ public abstract class VaultCommandHandler extends CommandHandler {
 
     /**
      * Gets the permission manager instance.
+     *
      * @return The permission manager instance.
      */
     protected final @NotNull Permission getPermission() {

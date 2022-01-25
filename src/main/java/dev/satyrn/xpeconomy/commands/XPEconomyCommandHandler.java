@@ -1,10 +1,13 @@
 package dev.satyrn.xpeconomy.commands;
 
 import dev.satyrn.papermc.api.commands.v1.CommandHandler;
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.VaultCommandHandler;
-import dev.satyrn.xpeconomy.lang.I18n;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.command.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Contract;
@@ -20,6 +23,7 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
 
     /**
      * Creates a new command executor.
+     *
      * @param permission The permission manager instance.
      */
     public XPEconomyCommandHandler(final @NotNull Plugin plugin, final @NotNull Permission permission) {
@@ -43,7 +47,9 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
         final @NotNull String subcommandAlias = args.length >= 1 ? args[0] : "";
 
         if (!subcommandAlias.isBlank()) {
-            final @NotNull Optional<Subcommand> result = this.subcommands.stream().filter(subcommand -> subcommand.isMatch(subcommandAlias)).findFirst();
+            final @NotNull Optional<Subcommand> result = this.subcommands.stream()
+                    .filter(subcommand -> subcommand.isMatch(subcommandAlias))
+                    .findFirst();
 
             if (result.isPresent()) {
                 final @NotNull Subcommand subcommand = result.get();
@@ -72,7 +78,7 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used
@@ -85,11 +91,16 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
     public @NotNull List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         final List<String> completionOptions = new ArrayList<>();
         if (args.length == 1) {
-            completionOptions.addAll(this.subcommands.stream().filter(subcommand -> subcommand.isSenderValid(sender) && subcommand.isAllowed(sender)).map(Subcommand::name).toList());
+            completionOptions.addAll(this.subcommands.stream()
+                    .filter(subcommand -> subcommand.isSenderValid(sender) && subcommand.isAllowed(sender))
+                    .map(Subcommand::name)
+                    .toList());
         } else if (args.length > 1) {
             final String subcommandAlias = args[0].toLowerCase(Locale.ROOT);
             if (!subcommandAlias.isBlank()) {
-                final @NotNull Optional<Subcommand> result = this.subcommands.stream().filter(subcommand -> subcommand.isMatch(subcommandAlias)).findFirst();
+                final @NotNull Optional<Subcommand> result = this.subcommands.stream()
+                        .filter(subcommand -> subcommand.isMatch(subcommandAlias))
+                        .findFirst();
                 if (result.isPresent()) {
                     final @NotNull Subcommand subcommand = result.get();
                     if (subcommand.isSenderValid(sender) && subcommand.isAllowed(sender)) {
@@ -108,7 +119,7 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
     /**
      * Adds a new subcommand to the command handler.
      *
-     * @param name The name of the subcommand. Registration will fail if this matches any existing subcommand's name or aliases.
+     * @param name           The name of the subcommand. Registration will fail if this matches any existing subcommand's name or aliases.
      * @param commandHandler The command handler instance.
      * @return The command handler instance.
      */
@@ -120,8 +131,8 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
     /**
      * Adds a new subcommand to the command handler.
      *
-     * @param name The name of the subcommand. Registration will fail if this matches any existing subcommand's name or aliases.
-     * @param commandHandler The command handler instance.
+     * @param name              The name of the subcommand. Registration will fail if this matches any existing subcommand's name or aliases.
+     * @param commandHandler    The command handler instance.
      * @param defaultPermission The default permission to allow access to the command.
      * @return The command handler instance.
      */
@@ -136,11 +147,11 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
     /**
      * Adds a new subcommand to the command handler.
      *
-     * @param name The name of the subcommand. Registration will fail if this matches any existing subcommand's name or aliases.
-     * @param commandHandler The command handler instance.
+     * @param name              The name of the subcommand. Registration will fail if this matches any existing subcommand's name or aliases.
+     * @param commandHandler    The command handler instance.
      * @param defaultPermission The default permission to allow access to the command.
-     * @param allowPlayer {@code true} if the command should require a player to invoke; otherwise, {@code false}
-     * @param aliases A list of aliases for the command. This will fail if any of these match any existing subcommand's name or alias.
+     * @param allowPlayer       {@code true} if the command should require a player to invoke; otherwise, {@code false}
+     * @param aliases           A list of aliases for the command. This will fail if any of these match any existing subcommand's name or alias.
      * @return The command handler instance.
      */
     @Contract(value = "_, _, _, _, _, _ -> this", mutates = "this")
@@ -150,10 +161,14 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
                                                       final boolean allowPlayer,
                                                       final boolean allowNonPlayer,
                                                       final @NotNull String... aliases) {
-        if (this.subcommands.stream().noneMatch(subcommand -> subcommand.isMatch(name) || Arrays.stream(aliases).anyMatch(subcommand::isMatch))) {
+        if (this.subcommands.stream()
+                .noneMatch(subcommand -> subcommand.isMatch(name) || Arrays.stream(aliases)
+                        .anyMatch(subcommand::isMatch))) {
             this.subcommands.add(new Subcommand(name, defaultPermission, commandHandler, this.getPermission(), allowPlayer, allowNonPlayer, aliases));
         } else {
-            this.getPlugin().getLogger().log(Level.SEVERE, String.format("[Command] Failed to register subcommand: %s! A matching subcommand has already been registered!", name));
+            this.getPlugin()
+                    .getLogger()
+                    .log(Level.SEVERE, String.format("[Command] Failed to register subcommand: %s! A matching subcommand has already been registered!", name));
             throw new RuntimeException(String.format("Duplicate subcommand registered: %s", name));
         }
         return this;
@@ -187,7 +202,7 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
          * Requests a list of possible completions for a command argument.
          *
          * @param sender  Source of the command.  For players tab-completing a
-         *                command inside of a command block, this will be the player, not
+         *                command inside a command block, this will be the player, not
          *                the command block.
          * @param command Command which was executed
          * @param alias   The alias used
@@ -208,7 +223,8 @@ public final class XPEconomyCommandHandler extends VaultCommandHandler {
          * @return {@code true} if the subcommand is a match; otherwise, {@code false}
          */
         public boolean isMatch(final @NotNull String subcommand) {
-            return this.name.equalsIgnoreCase(subcommand) || Arrays.stream(this.aliases).anyMatch(alias -> alias.equalsIgnoreCase(subcommand));
+            return this.name.equalsIgnoreCase(subcommand) || Arrays.stream(this.aliases)
+                    .anyMatch(alias -> alias.equalsIgnoreCase(subcommand));
         }
 
         /**

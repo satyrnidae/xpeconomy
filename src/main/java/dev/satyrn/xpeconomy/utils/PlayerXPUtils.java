@@ -33,7 +33,7 @@ public final class PlayerXPUtils {
     /**
      * Sets a player's experience values to a specific balance.
      *
-     * @param uuid    The player UUID.
+     * @param uuid  The player UUID.
      * @param total The player balance.
      */
     @SuppressWarnings("unused")
@@ -51,7 +51,7 @@ public final class PlayerXPUtils {
      * Sets a player's experience values to a specific total.
      *
      * @param player The player.
-     * @param total The player's XP total.
+     * @param total  The player's XP total.
      */
     public static void setPlayerXPTotal(final @NotNull Player player, final @NotNull BigInteger total) {
         Pair<BigInteger, BigDecimal> pair = toLevelProgress(total);
@@ -62,10 +62,10 @@ public final class PlayerXPUtils {
         float newProgress = pair.getValue1().floatValue();
 
         if (currentLevel < newLevel) {
-            float f = currentLevel > 30 ? 1F : (float)currentLevel / 30F;
+            float f = currentLevel > 30 ? 1F : (float) currentLevel / 30F;
             player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, f * 0.75F, 1.0F);
         }
-        float pitch = (float)(Math.random() - Math.random()) * 0.35F + 0.9F;
+        float pitch = (float) (Math.random() - Math.random()) * 0.35F + 0.9F;
         if (currentLevel > newLevel || (currentLevel == newLevel && currentProgress > newProgress)) {
             pitch -= 0.25F;
         }
@@ -111,23 +111,22 @@ public final class PlayerXPUtils {
 
         // For levels <= 16, use "sqrt(x + 9) - 3".
         if (total.compareTo(getXPForLevel(FUNC_1_MAX)) < 1) {
-            levelProgress = new BigDecimal(total)
-                    .add(BigDecimal.valueOf(9))
+            levelProgress = new BigDecimal(total).add(BigDecimal.valueOf(9))
                     .sqrt(MATH_CONTEXT)
                     .subtract(BigDecimal.valueOf(3));
         }
         // For levels > 16 and levels <= 31, use "81/10 + sqrt((2/5) × (x - 7839/40))".
         else if (total.compareTo(getXPForLevel(FUNC_2_MAX)) < 1) {
-            levelProgress = new BigDecimal(total)
-                    .subtract(BigDecimal.valueOf(7839).divide(BigDecimal.valueOf(40), MATH_CONTEXT))
+            levelProgress = new BigDecimal(total).subtract(BigDecimal.valueOf(7839)
+                            .divide(BigDecimal.valueOf(40), MATH_CONTEXT))
                     .multiply(BigDecimal.valueOf(2).divide(BigDecimal.valueOf(5), MATH_CONTEXT))
                     .sqrt(MATH_CONTEXT)
                     .add(BigDecimal.valueOf(81).divide(BigDecimal.valueOf(10), MATH_CONTEXT));
         }
         // For levels > 31, use "325/18 + sqrt((2/9) × (x - 54215/72))".
         else {
-            levelProgress = new BigDecimal(total)
-                    .subtract(BigDecimal.valueOf(54215).divide(BigDecimal.valueOf(72), MATH_CONTEXT))
+            levelProgress = new BigDecimal(total).subtract(BigDecimal.valueOf(54215)
+                            .divide(BigDecimal.valueOf(72), MATH_CONTEXT))
                     .multiply(BigDecimal.valueOf(2).divide(BigDecimal.valueOf(9), MATH_CONTEXT))
                     .sqrt(MATH_CONTEXT)
                     .add(BigDecimal.valueOf(325).divide(BigDecimal.valueOf(18), MATH_CONTEXT));
@@ -145,34 +144,35 @@ public final class PlayerXPUtils {
      * @return The total amount of XP that the player has, rounded to the nearest whole number.
      */
     public static BigInteger getTotalXPValue(final int level, final float progress) {
-        return getXPForLevel(BigInteger.valueOf(level))
-                .add(getCurrentLevelProgress(BigInteger.valueOf(level), BigDecimal.valueOf(progress)));
+        return getXPForLevel(BigInteger.valueOf(level)).add(getCurrentLevelProgress(BigInteger.valueOf(level), BigDecimal.valueOf(progress)));
     }
 
     /**
      * Calculates the total XP value for a given level. h/t to Minecraft Wiki.
+     * If this equation changes in-game, it will have to change here as well.
      *
      * @param level The player's level.
      * @return The total XP value for the player's current level, rounded to a whole number.
-     * @implNote If this equation changes in-game, it will have to change here as well.
      */
     public static BigInteger getXPForLevel(final BigInteger level) {
         BigDecimal totalXPForLevel;
         final BigDecimal decimalLevel = new BigDecimal(level);
 
         // For levels <= 16, use "x^2 + 6x".
-        if (level.compareTo(FUNC_1_MAX) <= 0){
+        if (level.compareTo(FUNC_1_MAX) <= 0) {
             // x^2 + 6x
             totalXPForLevel = decimalLevel                                                                              // x
                     .pow(2)                                                                                             // x^2
-                    .add(BigDecimal.valueOf(6).multiply(decimalLevel));                                                 // x^2 + 6x
+                    .add(BigDecimal.valueOf(6)
+                            .multiply(decimalLevel));                                                 // x^2 + 6x
         }
         // For levels > 16 and levels <= 31, use "(5/2)x^2 - (81/2)x + 360".
         else if (level.compareTo(FUNC_2_MAX) <= 0) {
             totalXPForLevel = BigDecimal.valueOf(5)                                                                     // 5
                     .divide(BigDecimal.valueOf(2), MATH_CONTEXT)                                                        // 5/2
                     .multiply(decimalLevel.pow(2))                                                                      // (5/2)x^2
-                    .subtract(BigDecimal.valueOf(81).divide(BigDecimal.valueOf(2), MATH_CONTEXT)                        // (5/2)x^2 - (81/2...
+                    .subtract(BigDecimal.valueOf(81)
+                            .divide(BigDecimal.valueOf(2), MATH_CONTEXT)                        // (5/2)x^2 - (81/2...
                             .multiply(decimalLevel))                                                                    // (5/2)x^2 - (81/2)x
                     .add(BigDecimal.valueOf(360));                                                                      // (5/2)x^2 - (18/2)x + 360
         }
@@ -181,7 +181,8 @@ public final class PlayerXPUtils {
             totalXPForLevel = BigDecimal.valueOf(9)                                                                     // 9
                     .divide(BigDecimal.valueOf(2), MATH_CONTEXT)                                                        // 9/2
                     .multiply(decimalLevel.pow(2))                                                                      // (9/2)x^2
-                    .subtract(BigDecimal.valueOf(325).divide(BigDecimal.valueOf(2), MATH_CONTEXT)
+                    .subtract(BigDecimal.valueOf(325)
+                            .divide(BigDecimal.valueOf(2), MATH_CONTEXT)
                             .multiply(decimalLevel))                                                                    // (9/2)x^2 - (325/2)x
                     .add(BigDecimal.valueOf(2220));                                                                     // (9/2)x^2 - (325/2)x + 2220;
         }
@@ -190,32 +191,26 @@ public final class PlayerXPUtils {
 
     /**
      * Gets the current XP amount for the player's current progress towards leveling. h/t to Minecraft Wiki.
+     * If this equation changes in-game, it will have to change here as well.
      *
      * @param level   The player's current level.
      * @param percent The current progress towards the next level.
      * @return The total XP the player currently has within the current level, rounded to a whole number.
-     * @implNote If this equation changes in-game, it will have to change here as well.
      */
     public static BigInteger getCurrentLevelProgress(final BigInteger level, final BigDecimal percent) {
         BigDecimal toNextLevel;
 
         // For levels < 16, use "2x + 7"
         if (level.compareTo(FUNC_1_MAX) < 0) {
-            toNextLevel = new BigDecimal(level)
-                    .multiply(BigDecimal.valueOf(2))
-                    .add(BigDecimal.valueOf(7));
+            toNextLevel = new BigDecimal(level).multiply(BigDecimal.valueOf(2)).add(BigDecimal.valueOf(7));
         }
         // For levels >= 16 and levels < 31, use "5x - 38"
         else if (level.compareTo(FUNC_2_MAX) < 0) {
-            toNextLevel = new BigDecimal(level)
-                    .multiply(BigDecimal.valueOf(5))
-                    .subtract(BigDecimal.valueOf(38));
+            toNextLevel = new BigDecimal(level).multiply(BigDecimal.valueOf(5)).subtract(BigDecimal.valueOf(38));
         }
         // For levels >= 31, use "9x - 158"
         else {
-            toNextLevel = new BigDecimal(level)
-                    .multiply(BigDecimal.valueOf(9))
-                    .subtract(BigDecimal.valueOf(158));
+            toNextLevel = new BigDecimal(level).multiply(BigDecimal.valueOf(9)).subtract(BigDecimal.valueOf(158));
         }
         return toNextLevel.multiply(percent).setScale(0, RoundingMode.HALF_UP).toBigInteger();
     }

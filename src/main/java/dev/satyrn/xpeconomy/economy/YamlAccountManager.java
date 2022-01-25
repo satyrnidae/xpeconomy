@@ -37,11 +37,10 @@ public final class YamlAccountManager extends PlayerAccountManagerBase {
 
     /**
      * Loads account data from a YAML file.
-     *
      */
     @Override
     public void load() {
-        final File configPath = new File(plugin.getDataFolder().getPath() + "/accounts.yml");
+        final File configPath = new File(plugin.getDataFolder().getPath() + File.separator + "accounts.yml");
         if (!configPath.exists()) {
             return;
         }
@@ -49,32 +48,40 @@ public final class YamlAccountManager extends PlayerAccountManagerBase {
         try {
             this.ymlConfigFile.load(configPath);
         } catch (InvalidConfigurationException | IOException ex) {
-            this.plugin.getLogger().log(Level.SEVERE,
-                    String.format("[Storage] Failed to load accounts.yml: %s", ex.getMessage()), ex);
+            this.plugin.getLogger().log(Level.SEVERE, "[Storage] Failed to load accounts.yml.", ex);
             return;
         }
 
+        String loadingVersion = this.ymlConfigFile.getString("version");
+        if (!Objects.equals(loadingVersion, this.plugin.getDescription().getVersion())) {
+            this.plugin.getLogger()
+                    .log(Level.WARNING, "[Storage] Account storage file {0} is version {1} (expected {2})... Loading will continue but data loss may occur!", new Object[]{configPath.getPath(), loadingVersion == null ? "unknown" : loadingVersion, this.plugin.getDescription().getVersion()});
+        }
+
         final List<Map<?, ?>> accountsSection = this.ymlConfigFile.getMapList("accounts");
-        for (final Map<?, ?> map : accountsSection) {
+        for (final Map<?, ?> savedAccount : accountsSection) {
             final PlayerAccount account = new PlayerAccount(this.configuration);
             try {
-                for (final Map.Entry<?, ?> savedAccount : map.entrySet()) {
-                    if (savedAccount.getKey().toString().equals("uuid")) {
-                        account.setUUID(UUID.fromString(savedAccount.getValue().toString()));
-                    } else if (savedAccount.getKey().toString().equals("balance")) {
-                        final double balance = Double.parseDouble(savedAccount.getValue().toString());
-                        account.setBalanceRaw(BigDecimal.valueOf(balance).setScale(0, RoundingMode.HALF_UP).toBigInteger(), false);
+                for (final Map.Entry<?, ?> accountDetails : savedAccount.entrySet()) {
+                    if (accountDetails.getKey().toString().equals("uuid")) {
+                        account.setUUID(UUID.fromString(accountDetails.getValue().toString()));
+                    } else if (accountDetails.getKey().toString().equals("balance")) {
+                        final double balance = Double.parseDouble(accountDetails.getValue().toString());
+                        account.setBalanceRaw(BigDecimal.valueOf(balance)
+                                .setScale(0, RoundingMode.HALF_UP)
+                                .toBigInteger(), false);
+                    } else if (accountDetails.getKey().toString().equals("name")) {
+                        final String name = accountDetails.getValue().toString();
+                        account.setName(name);
                     }
                 }
 
-                this.plugin.getLogger().log(Level.FINE,
-                        String.format("[Storage] Loaded an account for player %s with balance %s",
-                                account.getUUID(), account.getBalance().doubleValue()));
+                this.plugin.getLogger()
+                        .log(Level.FINE, "[Storage] Loaded an account for player {0} with balance {1}", new Object[]{account.getUUID(), account.getBalance().doubleValue()});
                 this.accounts.add(account);
             } catch (IllegalArgumentException ex) {
-                this.plugin.getLogger().log(Level.WARNING,
-                        String.format("[Storage] Failed to load an account from accounts.yml: %s", ex.getMessage()),
-                        ex);
+                this.plugin.getLogger()
+                        .log(Level.WARNING, "[Storage] Failed to load an account from accounts.yml.", ex);
             }
         }
     }
@@ -84,13 +91,16 @@ public final class YamlAccountManager extends PlayerAccountManagerBase {
      */
     @Override
     public synchronized void save() {
-        final File configPath = new File(plugin.getDataFolder().getPath() + "/accounts.yml");
+        final File configPath = new File(plugin.getDataFolder().getPath() + File.separator + "accounts.yml");
         final List<Map<?, ?>> mapList = new ArrayList<>();
+
+        this.ymlConfigFile.set("version", this.plugin.getDescription().getVersion());
 
         for (final PlayerAccount account : this.accounts) {
             final Map<String, String> map = new HashMap<>();
             map.put("uuid", account.getUUID().toString());
             map.put("balance", Double.toString(account.getBalanceRaw().doubleValue()));
+            map.put("name", account.getName());
             mapList.add(map);
         }
 
@@ -99,8 +109,7 @@ public final class YamlAccountManager extends PlayerAccountManagerBase {
         try {
             this.ymlConfigFile.save(configPath);
         } catch (final IOException ex) {
-            this.plugin.getLogger().log(Level.SEVERE,
-                    String.format("[Storage] Failed to save accounts.yml: %s", ex.getMessage()), ex);
+            this.plugin.getLogger().log(Level.SEVERE, "[Storage] Failed to save accounts.yml.", ex);
         }
     }
 }

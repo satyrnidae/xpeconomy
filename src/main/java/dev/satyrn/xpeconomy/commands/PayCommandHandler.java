@@ -1,10 +1,10 @@
 package dev.satyrn.xpeconomy.commands;
 
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
@@ -31,15 +31,12 @@ public final class PayCommandHandler extends AccountCommandHandler {
     /**
      * Creates a new pay command handler.
      *
-     * @param plugin The plugin instance
-     * @param permission The permission manager instance
+     * @param plugin         The plugin instance
+     * @param permission     The permission manager instance
      * @param accountManager The account manager
-     * @param configuration The configuration instance
+     * @param configuration  The configuration instance
      */
-    public PayCommandHandler(final @NotNull Plugin plugin,
-                             final @NotNull Permission permission,
-                             final @NotNull AccountManager accountManager,
-                             final @NotNull Configuration configuration) {
+    public PayCommandHandler(final @NotNull Plugin plugin, final @NotNull Permission permission, final @NotNull AccountManager accountManager, final @NotNull Configuration configuration) {
         super(plugin, permission, accountManager, configuration);
     }
 
@@ -67,13 +64,13 @@ public final class PayCommandHandler extends AccountCommandHandler {
             } else if (!DOUBLE_PATTERN.matcher(args[isSubCommand ? 2 : 1]).matches()) {
                 sender.sendMessage(I18n.tr("command.pay.invalidAmount", args[isSubCommand ? 2 : 1]));
             } else {
-                final BigDecimal payment = this.getEconomyMethod().scale(BigDecimal.valueOf(
-                        Double.parseDouble(args[isSubCommand ? 2 : 1])));
+                final BigDecimal payment = this.getEconomyMethod()
+                        .scale(BigDecimal.valueOf(Double.parseDouble(args[isSubCommand ? 2 : 1])));
                 final String targetName = args[isSubCommand ? 1 : 0];
                 final Optional<OfflinePlayer> result = Commands.getPlayer(targetName);
                 if (result.isPresent()) {
                     final OfflinePlayer target = result.get();
-                    final UUID senderId = ((Player)sender).getUniqueId();
+                    final UUID senderId = ((Player) sender).getUniqueId();
                     if (target.getUniqueId() != senderId) {
                         Account senderAccount = this.getAccountManager().getAccount(senderId);
                         if (senderAccount != null) {
@@ -82,11 +79,10 @@ public final class PayCommandHandler extends AccountCommandHandler {
                                 if (targetAccount != null) {
                                     senderAccount.withdraw(payment);
                                     targetAccount.deposit(payment);
-                                    sender.sendMessage(I18n.tr("command.pay.result", target.getName(),
-                                            this.getEconomyMethod().toString(payment, true)));
+                                    sender.sendMessage(I18n.tr("command.pay.result", target.getName() == null ? targetAccount.getName() : target.getName(), this.getEconomyMethod()
+                                            .toString(payment, true)));
                                 } else {
-                                    sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount",
-                                            target.getName()));
+                                    sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName() == null ? target.getUniqueId() : target.getName()));
                                 }
                             } else {
                                 sender.sendMessage(I18n.tr("command.pay.insufficientBalance"));
@@ -112,7 +108,7 @@ public final class PayCommandHandler extends AccountCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used

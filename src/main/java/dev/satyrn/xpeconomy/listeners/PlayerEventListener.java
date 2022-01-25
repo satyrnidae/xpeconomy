@@ -1,5 +1,6 @@
 package dev.satyrn.xpeconomy.listeners;
 
+import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.tasks.PlayerBalanceSynchronizationTask;
 import dev.satyrn.xpeconomy.tasks.PlayerExperienceSynchronizationTask;
@@ -8,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 import java.util.logging.Level;
@@ -21,7 +23,8 @@ public record PlayerEventListener(Plugin plugin, AccountManager accountManager) 
      *
      * @param accountManager The account manager instance.
      */
-    public PlayerEventListener { }
+    public PlayerEventListener {
+    }
 
     /**
      * Handles player join events.
@@ -30,14 +33,16 @@ public record PlayerEventListener(Plugin plugin, AccountManager accountManager) 
      */
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        this.plugin.getLogger().log(Level.FINER, "[Event] Player joined world, scheduling attempt to apply offline balance changes.");
+        this.plugin.getLogger()
+                .log(Level.FINER, "[Event] Player joined world, scheduling attempt to apply offline balance changes.");
 
         final UUID uuid = e.getPlayer().getUniqueId();
-        if (!this.accountManager.hasAccount(uuid)) {
-            this.accountManager.createAccount(e.getPlayer());
+        @Nullable Account account = this.accountManager.getAccount(uuid);
+        if (account == null) {
+            account = this.accountManager.createAccount(e.getPlayer());
         }
-        new PlayerExperienceSynchronizationTask(this.plugin, uuid, this.accountManager.getAccount(uuid))
-                .runTaskLater(this.plugin, 1L);
+        account.setName(e.getPlayer().getName());
+        new PlayerExperienceSynchronizationTask(this.plugin, uuid, this.accountManager.getAccount(uuid)).runTaskLater(this.plugin, 1L);
     }
 
     /**
@@ -47,10 +52,10 @@ public record PlayerEventListener(Plugin plugin, AccountManager accountManager) 
      */
     @EventHandler
     public void onExpChange(PlayerExpChangeEvent e) {
-        this.plugin.getLogger().log(Level.FINER, "[Event] Player Experience Update scheduled account balance synchronization.");
+        this.plugin.getLogger()
+                .log(Level.FINER, "[Event] Player Experience Update scheduled account balance synchronization.");
 
         final UUID uuid = e.getPlayer().getUniqueId();
-        new PlayerBalanceSynchronizationTask(this.plugin, e.getPlayer(), this.accountManager.getAccount(uuid))
-                .runTaskLater(this.plugin, 1L);
+        new PlayerBalanceSynchronizationTask(this.plugin, e.getPlayer(), this.accountManager.getAccount(uuid)).runTaskLater(this.plugin, 1L);
     }
 }

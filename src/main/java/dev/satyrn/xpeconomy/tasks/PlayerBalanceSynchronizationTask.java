@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.logging.Level;
 

@@ -1,8 +1,11 @@
 package dev.satyrn.xpeconomy.commands;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.VaultCommandHandler;
-import dev.satyrn.xpeconomy.lang.I18n;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,8 +15,14 @@ import org.bukkit.util.ChatPaginator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +32,7 @@ public class HelpCommandHandler extends VaultCommandHandler {
     /**
      * Creates a handler for the help subcommand.
      *
-     * @param plugin The plugin instance.
+     * @param plugin     The plugin instance.
      * @param permission The permission instance.
      */
     public HelpCommandHandler(final @NotNull Plugin plugin,
@@ -42,7 +51,7 @@ public class HelpCommandHandler extends VaultCommandHandler {
         }
 
         try (final @NotNull BufferedReader bufferedReader =
-                new BufferedReader(new InputStreamReader(helpProvidersStream))) {
+                     new BufferedReader(new InputStreamReader(helpProvidersStream))) {
             final @NotNull JsonArray helpProvidersJsonArray = JsonParser.parseReader(bufferedReader).getAsJsonArray();
             for (final @NotNull JsonElement jsonElement : helpProvidersJsonArray) {
                 final @NotNull JsonObject helpProvider = jsonElement.getAsJsonObject();
@@ -53,9 +62,12 @@ public class HelpCommandHandler extends VaultCommandHandler {
                     continue;
                 }
 
-                final @Nullable String permission = helpProvider.has("permission") ? helpProvider.get("permission").getAsString() : null;
-                final boolean allowPlayers = !helpProvider.has("allowPlayers") || helpProvider.get("allowPlayers").getAsBoolean();
-                final boolean allowNonPlayers = !helpProvider.has("allowNonPlayers") || helpProvider.get("allowNonPlayers").getAsBoolean();
+                final @Nullable String permission = helpProvider.has("permission") ? helpProvider.get("permission")
+                        .getAsString() : null;
+                final boolean allowPlayers = !helpProvider.has("allowPlayers") || helpProvider.get("allowPlayers")
+                        .getAsBoolean();
+                final boolean allowNonPlayers = !helpProvider.has("allowNonPlayers") || helpProvider.get("allowNonPlayers")
+                        .getAsBoolean();
                 final @Nullable JsonArray playerUsageKeysJsonArray = helpProvider.has("playerUsageKeys") ? helpProvider.getAsJsonArray("playerUsageKeys") : null;
                 final @Nullable JsonArray nonPlayerUsageKeysJsonArray = helpProvider.has("nonPlayerUsageKeys") ? helpProvider.getAsJsonArray("nonPlayerUsageKeys") : null;
                 final @Nullable JsonArray aliasesJsonArray = helpProvider.has("aliases") ? helpProvider.getAsJsonArray("aliases") : null;
@@ -138,7 +150,7 @@ public class HelpCommandHandler extends VaultCommandHandler {
                     this.getPlugin().getDescription().getName(),
                     this.getPlugin().getDescription().getVersion(),
                     String.join(", ", this.getPlugin().getDescription().getAuthors())));
-            for(final @NotNull HelpProvider provider : this.helpProviders) {
+            for (final @NotNull HelpProvider provider : this.helpProviders) {
                 final @Nullable String listEntry = provider.getListEntry(sender);
                 if (listEntry != null && !listEntry.isBlank()) {
                     helpBuilder.append('\n').append(listEntry);
@@ -174,13 +186,15 @@ public class HelpCommandHandler extends VaultCommandHandler {
      * Gets help on a single command.
      *
      * @param command The command to get help for.
-     * @param sender The command sender.
-     * @param page The page to display.
+     * @param sender  The command sender.
+     * @param page    The page to display.
      */
     private void getHelpResults(@NotNull String command, @NotNull CommandSender sender, int page) {
         @Nullable String commandHelp = null;
 
-        final @NotNull Optional<HelpProvider> result = this.helpProviders.stream().filter(provider -> provider.isMatch(command)).findFirst();
+        final @NotNull Optional<HelpProvider> result = this.helpProviders.stream()
+                .filter(provider -> provider.isMatch(command))
+                .findFirst();
 
         if (result.isPresent()) {
             final @NotNull HelpProvider helpProvider = result.get();
@@ -205,9 +219,9 @@ public class HelpCommandHandler extends VaultCommandHandler {
         if (chatPage.getTotalPages() > 1) {
             message.append("\n")
                     .append(I18n.tr("command.help.pagination",
-                    chatPage.getPageNumber(),
-                    chatPage.getTotalPages(),
-                    command.toLowerCase(Locale.ROOT)));
+                            chatPage.getPageNumber(),
+                            chatPage.getTotalPages(),
+                            command.toLowerCase(Locale.ROOT)));
         }
         sender.sendMessage(message.toString());
     }
@@ -216,7 +230,7 @@ public class HelpCommandHandler extends VaultCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used
@@ -232,7 +246,7 @@ public class HelpCommandHandler extends VaultCommandHandler {
         final List<String> completionOptions = new ArrayList<>();
 
         if (args.length == pageOrCommandIndex + 1) {
-            for(final @NotNull HelpProvider helpProvider : helpProviders) {
+            for (final @NotNull HelpProvider helpProvider : helpProviders) {
                 if (helpProvider.isSenderValid(sender) && helpProvider.isAllowed(sender)) {
                     completionOptions.add(helpProvider.name);
                 }
@@ -278,7 +292,8 @@ public class HelpCommandHandler extends VaultCommandHandler {
         }
 
         public boolean isMatch(final @NotNull String name) {
-            return this.name.equalsIgnoreCase(name) || this.aliases.stream().anyMatch(alias -> alias.equalsIgnoreCase(name));
+            return this.name.equalsIgnoreCase(name) || this.aliases.stream()
+                    .anyMatch(alias -> alias.equalsIgnoreCase(name));
         }
 
     }

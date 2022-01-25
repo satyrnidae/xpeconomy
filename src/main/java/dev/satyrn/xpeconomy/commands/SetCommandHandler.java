@@ -1,10 +1,10 @@
 package dev.satyrn.xpeconomy.commands;
 
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implements a command which allows a user to set another's balance.
+ * Implements a command which allows a user to set another user's balance.
  *
  * @author Isabel Maskrey (saturniidae)
  */
@@ -29,15 +29,12 @@ public class SetCommandHandler extends AccountCommandHandler {
     /**
      * Creates a new command handler for the /set command.
      *
-     * @param plugin The plugin instance
-     * @param permission The permission manager
+     * @param plugin         The plugin instance
+     * @param permission     The permission manager
      * @param accountManager The account manager
-     * @param configuration The configuration
+     * @param configuration  The configuration
      */
-    public SetCommandHandler(final @NotNull Plugin plugin,
-                             final @NotNull Permission permission,
-                             final @NotNull AccountManager accountManager,
-                             final @NotNull Configuration configuration) {
+    public SetCommandHandler(final @NotNull Plugin plugin, final @NotNull Permission permission, final @NotNull AccountManager accountManager, final @NotNull Configuration configuration) {
         super(plugin, permission, accountManager, configuration);
     }
 
@@ -61,8 +58,7 @@ public class SetCommandHandler extends AccountCommandHandler {
 
         final Permission permission = this.getPermission();
 
-        if (sender instanceof Player
-                && !permission.has(sender, "xpeconomy.balance.set")) {
+        if (sender instanceof Player && !permission.has(sender, "xpeconomy.balance.set")) {
             sender.sendMessage(I18n.tr("command.balance.set.permission"));
             return true;
         }
@@ -94,7 +90,7 @@ public class SetCommandHandler extends AccountCommandHandler {
         final OfflinePlayer target;
         if (args.length < playerArgIndex + 1) {
             if (sender instanceof Player) {
-                target = (Player)sender;
+                target = (Player) sender;
             } else {
                 sender.sendMessage(I18n.tr("command.balance.set.parameter.player.missing"));
                 return true;
@@ -107,15 +103,13 @@ public class SetCommandHandler extends AccountCommandHandler {
                 return true;
             }
             target = result.get();
-            if (sender instanceof final Player player
-                    && player.getUniqueId() != target.getUniqueId()) {
+            if (sender instanceof final Player player && player.getUniqueId() != target.getUniqueId()) {
                 if (!permission.has(player, "xpeconomy.balance.set.others")) {
                     sender.sendMessage(I18n.tr("command.balance.set.permission.others"));
                     return true;
                 }
-                if (permission.has(target.getPlayer(), "xpeconomy.balance.set.exempt")
-                        && !permission.has(player, "xpeconomy.balance.set.exempt.bypass")) {
-                    sender.sendMessage(I18n.tr("xpeconomy.balance.set.permission.exempt", target.getName()));
+                if (permission.has(target.getPlayer(), "xpeconomy.balance.set.exempt") && !permission.has(player, "xpeconomy.balance.set.exempt.bypass")) {
+                    sender.sendMessage(I18n.tr("xpeconomy.balance.set.permission.exempt", target.getName() == null ? target.getUniqueId() : target.getName()));
                     return true;
                 }
             }
@@ -123,24 +117,21 @@ public class SetCommandHandler extends AccountCommandHandler {
 
         final Account account = this.getAccountManager().getAccount(target.getUniqueId());
         if (account == null) {
-            if (sender instanceof final Player player
-                    && player.getUniqueId() == target.getUniqueId()) {
+            if (sender instanceof final Player player && player.getUniqueId() == target.getUniqueId()) {
                 sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName() == null ? target.getUniqueId() : target.getName()));
             }
             return true;
         }
 
         account.setBalance(amount, true);
-        if (sender instanceof final Player player
-                && player.getUniqueId() == target.getUniqueId()) {
-            sender.sendMessage(I18n.tr("command.balance.set.result",
-                    this.getEconomyMethod().toString(account.getBalance(), true)));
+        if (sender instanceof final Player player && player.getUniqueId() == target.getUniqueId()) {
+            sender.sendMessage(I18n.tr("command.balance.set.result", this.getEconomyMethod()
+                    .toString(account.getBalance(), true)));
         } else {
-            sender.sendMessage(I18n.tr("command.balance.set.result.others",
-                    target.getName(),
-                    this.getEconomyMethod().toString(account.getBalance(), true)));
+            sender.sendMessage(I18n.tr("command.balance.set.result.others", target.getName() == null ? account.getName() : target.getName(), this.getEconomyMethod()
+                    .toString(account.getBalance(), true)));
         }
         return true;
     }
@@ -149,7 +140,7 @@ public class SetCommandHandler extends AccountCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used
@@ -183,7 +174,7 @@ public class SetCommandHandler extends AccountCommandHandler {
     /**
      * Gets the command usage hint.
      *
-     * @param sender The player sender
+     * @param sender  The player sender
      * @param command The command to default to if the usage is not set on the handler.
      * @return The command usage hint.
      */

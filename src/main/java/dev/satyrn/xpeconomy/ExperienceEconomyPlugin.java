@@ -1,25 +1,34 @@
 package dev.satyrn.xpeconomy;
 
 import dev.satyrn.papermc.api.commands.v1.CommandHandler;
+import dev.satyrn.papermc.api.lang.v1.I18n;
+import dev.satyrn.papermc.api.storage.v1.MySQLConnectionManager;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.commands.*;
 import dev.satyrn.xpeconomy.configuration.Configuration;
 import dev.satyrn.xpeconomy.economy.ExperienceEconomy;
 import dev.satyrn.xpeconomy.economy.MySQLAccountManager;
 import dev.satyrn.xpeconomy.economy.YamlAccountManager;
-import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.listeners.ExperienceBottleEventListener;
 import dev.satyrn.xpeconomy.listeners.InventoryEventListener;
 import dev.satyrn.xpeconomy.listeners.PlayerEventListener;
 import dev.satyrn.xpeconomy.listeners.WorldEventListener;
-import dev.satyrn.xpeconomy.storage.MySQLConnectionManager;
+import dev.satyrn.xpeconomy.utils.EconomyMethod;
+import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.javatuples.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.logging.Level;
 
@@ -28,14 +37,35 @@ import java.util.logging.Level;
  */
 @SuppressWarnings("unused")
 public final class ExperienceEconomyPlugin extends JavaPlugin {
+    // The internationalization handler instance.
+    private I18n i18n;
+    // The account manager instance.
+    private AccountManager accountManager;
+    // The telemetry instance.
+    private Metrics metrics;
+    // The configuration instance.
+    private Configuration configuration;
+
     /**
-     * The internationalization handler instance.
+     * Occurs when the plugin configuration is reloaded.
      */
-    private transient I18n i18n;
-    /**
-     * The account manager instance.
-     */
-    private transient AccountManager accountManager;
+    @Override
+    public void reloadConfig() {
+        super.reloadConfig();
+        if (this.configuration == null) {
+            this.configuration = new Configuration(this);
+        }
+        if (this.configuration.debug.value()) {
+            this.getLogger().setLevel(Level.ALL);
+        } else {
+            this.getLogger().setLevel(Level.INFO);
+        }
+
+        if (this.i18n == null && I18n.getInstance() != null) {
+            this.i18n = I18n.getInstance();
+            this.i18n.setLocale(this.configuration.locale.value());
+        }
+    }
 
     /**
      * Occurs when the plugin is enabled.
@@ -56,7 +86,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
         }
 
         // Initialize configuration handler.
-        final Configuration configuration = new Configuration(this);
+        this.configuration = new Configuration(this);
 
         // Setup logging level
         if (configuration.debug.value()) {
@@ -74,6 +104,73 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
 
         this.registerEvents(this.accountManager, permissionProvider, configuration);
         this.registerCommands(this.accountManager, permissionProvider, configuration);
+
+        // bStats metrics
+        if (configuration.metrics.value() && this.metrics == null) {
+            final Metrics metrics = new Metrics(this, 14015);
+            metrics.addCustomChart(new SimplePie("account_storage", () -> configuration.mysql.enabled.value() ? "MySQL" : "YAML"));
+            metrics.addCustomChart(new SimplePie("bottle_options_enabled", () -> configuration.bottleOptions.enabled.value() ? "Yes" : "No"));
+            metrics.addCustomChart(new SimplePie("economy_method", () -> configuration.economyMethod.value()
+                    .toString()
+                    .toLowerCase(Locale.ROOT)));
+            if (configuration.bottleOptions.enabled.value()) {
+                metrics.addCustomChart(new SimplePie("block_to_fill_xp_bottles", () -> configuration.bottleOptions.fillInteractBlock.value().toString().toLowerCase(Locale.ROOT)));
+                metrics.addCustomChart(new SimplePie("throw_bottles", () -> configuration.bottleOptions.throwBottles.value() ? "Yes" : "No"));
+                metrics.addCustomChart(new SimplePie("refund_thrown_bottles", () -> configuration.bottleOptions.refundThrownBottles.value() ? "Yes" : "No"));
+                metrics.addCustomChart(new SimplePie("points_per_bottle", () -> {
+                    int pointsPerBottle = configuration.bottleOptions.pointsPerBottle.value();
+                    if (pointsPerBottle <= 10) {
+                        return "1-10";
+                    }
+                    if (pointsPerBottle <= 25) {
+                        return "11-25";
+                    }
+                    if (pointsPerBottle <= 50) {
+                        return "26-50";
+                    }
+                    if (pointsPerBottle <= 75) {
+                        return "51-75";
+                    }
+                    if (pointsPerBottle <= 100) {
+                        return "76-100";
+                    }
+                    return ">100 :O";
+                }));
+            }
+            metrics.addCustomChart(new SimplePie("starting_balance_in_levels", () -> {
+                final @NotNull EconomyMethod economyMethod = configuration.economyMethod.value();
+                final @NotNull BigDecimal startingBalance = configuration.startingBalance.value();
+                Pair<BigInteger, BigDecimal> startingLevelProgress = PlayerXPUtils.toLevelProgress(economyMethod.toRawBalance(startingBalance, BigInteger.ZERO));
+                int levels = startingLevelProgress.getValue0().intValue();
+                if (levels == 0) {
+                    if (startingLevelProgress.getValue1().floatValue() <= 0F) {
+                        return "None :(";
+                    }
+                    return "<1";
+                }
+                if (levels <= 2) {
+                    return "1-2";
+                }
+                if (levels <= 5) {
+                    return "3-5";
+                }
+                if (levels <= 10) {
+                    return "6-10";
+                }
+                if (levels <= 15) {
+                    return "11-15";
+                }
+                if (levels <= 20) {
+                    return "16-20";
+                } if (levels <= 25) {
+                    return "21-25";
+                }
+                if (levels <= 30) {
+                    return "26-30";
+                }
+                return ">30 :O";
+            }));
+        }
     }
 
     /**
@@ -109,7 +206,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
         final CommandHandler experienceCommandHandler = new ExperienceCommandHandler(this, permissionProvider).setupCommand(this, "experience");
         final CommandHandler helpCommandHandler = new HelpCommandHandler(this, permissionProvider);
         final CommandHandler payCommandHandler = new PayCommandHandler(this, permissionProvider, accountManager, configuration).setupCommand(this, "pay");
-        final CommandHandler reloadCommandHandler = new ReloadCommandHandler(this, permissionProvider);
+        final CommandHandler reloadCommandHandler = new ReloadCommandHandler(this, permissionProvider, configuration);
         final CommandHandler setCommandHandler = new SetCommandHandler(this, permissionProvider, accountManager, configuration).setupCommand(this, "setbalance");
         final CommandHandler syncCommandHandler = new SyncCommandHandler(this, permissionProvider, accountManager, configuration).setupCommand(this, "syncxp");
         final CommandHandler transferCommandHandler = new TransferCommandHandler(this, permissionProvider, accountManager, configuration).setupCommand(this, "transfer");
@@ -143,7 +240,8 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
      */
     private I18n initializeI18n(final Configuration configuration) {
         // Initialize internationalization handler.
-        final I18n i18n = new I18n(this, configuration);
+        final I18n i18n = new I18n(this, "lang");
+        i18n.setLocale(configuration.locale.value());
         i18n.enable();
 
         return i18n;
@@ -158,7 +256,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
     private AccountManager initializeEconomy(Configuration configuration) {
         final AccountManager accountManager;
         if (configuration.mysql.enabled.value()) {
-            final MySQLConnectionManager connection = new MySQLConnectionManager(this, configuration);
+            final MySQLConnectionManager connection = new MySQLConnectionManager(this, configuration.mysql);
             accountManager = new MySQLAccountManager(configuration, this, connection);
         } else {
             accountManager = new YamlAccountManager(configuration, this);

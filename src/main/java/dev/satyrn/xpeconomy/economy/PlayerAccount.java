@@ -1,11 +1,10 @@
 package dev.satyrn.xpeconomy.economy;
 
-import dev.satyrn.xpeconomy.api.configuration.ConfigurationConsumer;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.utils.ConfigurationConsumerRegistry;
 import dev.satyrn.xpeconomy.utils.EconomyMethod;
 import dev.satyrn.xpeconomy.utils.PlayerXPUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -15,11 +14,9 @@ import java.util.UUID;
 /**
  * Represents a player account. Handles all XP operations.
  */
-public final class PlayerAccount implements Account, ConfigurationConsumer {
-    /**
-     * The economy method to use.
-     */
-    private @NotNull transient EconomyMethod economyMethod = EconomyMethod.getDefault();
+public final class PlayerAccount implements Account {
+    // The configuration.
+    private final @NotNull Configuration configuration;
     /**
      * The account balance.
      */
@@ -28,36 +25,57 @@ public final class PlayerAccount implements Account, ConfigurationConsumer {
      * The UUID on the account.
      */
     private UUID uuid;
+    /**
+     * The account owner's name.
+     */
+    private @NotNull String name = "";
 
     /**
      * Creates a new account with no data.
      *
      * @param configuration The configuration instance.
      */
-    PlayerAccount(final Configuration configuration) {
-        this.reloadConfiguration(configuration);
-        ConfigurationConsumerRegistry.register(this);
+    PlayerAccount(final @NotNull Configuration configuration) {
+        this.configuration = configuration;
     }
 
     /**
      * Creates an account with a name and UUID.
      *
      * @param configuration The configuration instance.
-     * @param uuid The UUID on the account.
+     * @param uuid          The UUID on the account.
      */
     public PlayerAccount(final Configuration configuration, final UUID uuid) {
         this(configuration);
         this.uuid = uuid;
     }
 
+    // Gets the current economy method.
+    private EconomyMethod getEconomyMethod() {
+        return this.configuration.economyMethod.value();
+    }
+
     /**
-     * Called when the configuration is reloaded. Sets the state of the consumer based on the new configuration.
+     * Gets the name of the account owner.
      *
-     * @param configuration The configuration.
+     * @return The account owner's name.
      */
+    @Contract("-> !null")
     @Override
-    public void reloadConfiguration(@NotNull Configuration configuration) {
-        this.economyMethod = configuration.economyMethod.value();
+    public @NotNull String getName() {
+        return this.name;
+    }
+
+    /**
+     * Sets the account owner's name.
+     *
+     * @return The modified account.
+     */
+    @Contract(value = "_ -> this", mutates = "this")
+    @Override
+    public @NotNull Account setName(final @NotNull String name) {
+        this.name = name;
+        return this;
     }
 
     /**
@@ -89,11 +107,7 @@ public final class PlayerAccount implements Account, ConfigurationConsumer {
      */
     @Override
     public @NotNull BigDecimal getBalance() {
-        return this.economyMethod.fromRawBalance(this.getBalanceRaw());
-    }
-
-    public @NotNull BigInteger getBalanceRaw() {
-        return this.balance;
+        return this.getEconomyMethod().fromRawBalance(this.getBalanceRaw());
     }
 
     /**
@@ -107,6 +121,10 @@ public final class PlayerAccount implements Account, ConfigurationConsumer {
         return this.setBalance(value, false);
     }
 
+    public @NotNull BigInteger getBalanceRaw() {
+        return this.balance;
+    }
+
     /**
      * Sets the balance on the account and optionally updates the player's XP value.
      *
@@ -116,11 +134,12 @@ public final class PlayerAccount implements Account, ConfigurationConsumer {
      */
     @Override
     public @NotNull PlayerAccount setBalance(final @NotNull BigDecimal value, final boolean updateXPValue) {
-        return this.setBalanceRaw(this.economyMethod.toRawBalance(value, this.getBalanceRaw()), updateXPValue);
+        return this.setBalanceRaw(this.getEconomyMethod().toRawBalance(value, this.getBalanceRaw()), updateXPValue);
     }
 
     /**
      * Sets the raw balance value.
+     *
      * @param value The experience point balance.
      * @return The account instance.
      */
@@ -130,8 +149,6 @@ public final class PlayerAccount implements Account, ConfigurationConsumer {
         if (updateXPValue) {
             PlayerXPUtils.setPlayerXPTotal(this.uuid, this.balance);
         }
-
-        this.balance = value;
         return this;
     }
 
@@ -143,7 +160,7 @@ public final class PlayerAccount implements Account, ConfigurationConsumer {
      */
     @Override
     public boolean has(final @NotNull BigDecimal value) {
-        final BigInteger hasBalance = this.economyMethod.toRawBalance(value, BigInteger.ZERO);
+        final BigInteger hasBalance = this.getEconomyMethod().toRawBalance(value, BigInteger.ZERO);
 
         return this.balance.compareTo(hasBalance) >= 0;
     }
@@ -180,11 +197,12 @@ public final class PlayerAccount implements Account, ConfigurationConsumer {
 
     /**
      * Adds to the total value of the account.
-     * @param value The value to add
+     *
+     * @param value         The value to add
      * @param updateXPValue If true, also updates the player's XP value to match.
      */
     private void addBalance(@NotNull BigDecimal value, @SuppressWarnings("SameParameterValue") boolean updateXPValue) {
-        final BigInteger addValue = this.economyMethod.toRawBalance(value, BigInteger.ZERO);
+        final BigInteger addValue = this.getEconomyMethod().toRawBalance(value, BigInteger.ZERO);
 
         this.setBalanceRaw(this.balance.add(addValue), updateXPValue);
     }

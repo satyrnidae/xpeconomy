@@ -1,6 +1,6 @@
 package dev.satyrn.xpeconomy.utils;
 
-import dev.satyrn.xpeconomy.lang.I18n;
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,14 +39,24 @@ public enum EconomyMethod {
 
     /**
      * Creates a new EconomyMethod enum value.
-     *  @param scale The decimal scale of the economy method.
-     * @param roundingMode The rounding mode to use when converting the economy method balance.
-     * @param economyNameKey
+     *
+     * @param scale          The decimal scale of the economy method.
+     * @param roundingMode   The rounding mode to use when converting the economy method balance.
+     * @param economyNameKey The localized resource key name of the economy.
      */
     EconomyMethod(final int scale, final RoundingMode roundingMode, String economyNameKey) {
         this.scale = scale;
         this.roundingMode = roundingMode;
         this.economyNameKey = economyNameKey;
+    }
+
+    /**
+     * Returns the default economy method value.
+     *
+     * @return POINTS
+     */
+    public static EconomyMethod getDefault() {
+        return POINTS;
     }
 
     /**
@@ -68,13 +78,8 @@ public enum EconomyMethod {
     }
 
     /**
-     * Returns the default economy method value.
-     * @return POINTS
-     */
-    public static EconomyMethod getDefault() { return POINTS; }
-
-    /**
      * Scales the value to the economy mode.
+     *
      * @param value The value to scale.
      * @return The scaled value.
      */
@@ -83,14 +88,23 @@ public enum EconomyMethod {
     }
 
     /**
-     * Transforms
-     * @param value
-     * @return
+     * Transforms a value into a string representation.
+     * Does not append economy name.
+     *
+     * @param value The value to convert.
+     * @return The value as a string.
      */
     public @NotNull String toString(@NotNull BigDecimal value) {
         return this.toString(value, false);
     }
 
+    /**
+     * Transforms a value into a string representation.
+     *
+     * @param value               The value to convert.
+     * @param includeCurrencyName Whether to include the translated currency name.
+     * @return The transformed value.
+     */
     public @NotNull String toString(@NotNull BigDecimal value, boolean includeCurrencyName) {
         value = this.scale(value);
 
@@ -115,10 +129,20 @@ public enum EconomyMethod {
         return stringValue;
     }
 
+    /**
+     * Gets the translated currency name.
+     *
+     * @return The translated currency name.
+     */
     public @NotNull String getCurrencyName() {
         return I18n.tr(this.economyNameKey + ".name");
     }
 
+    /**
+     * Gets the translated plural currency name.
+     *
+     * @return The translated plural currency name.
+     */
     public @NotNull String getCurrencyNamePlural() {
         return I18n.tr(this.economyNameKey + ".name.plural");
     }
@@ -135,7 +159,8 @@ public enum EconomyMethod {
                 return new BigDecimal(PlayerXPUtils.toLevelProgress(rawBalance).getValue0());
             }
             case PER_HUNDRED -> {
-                return new BigDecimal(rawBalance).divide(BigDecimal.valueOf(100), MathContext.DECIMAL128).setScale(0, RoundingMode.DOWN);
+                return new BigDecimal(rawBalance).divide(BigDecimal.valueOf(100), MathContext.DECIMAL128)
+                        .setScale(0, RoundingMode.DOWN);
             }
             default -> {
                 return new BigDecimal(rawBalance);
@@ -146,7 +171,7 @@ public enum EconomyMethod {
     /**
      * Converts economy values into raw XP values.
      *
-     * @param balance The current economy value.
+     * @param balance    The current economy value.
      * @param rawBalance The current XP value. Used to properly add levels. Can be set to 0 if it should not be used.
      * @return The raw XP value.
      */

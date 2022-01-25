@@ -1,10 +1,10 @@
 package dev.satyrn.xpeconomy.commands;
 
+import dev.satyrn.papermc.api.lang.v1.I18n;
 import dev.satyrn.xpeconomy.api.commands.AccountCommandHandler;
 import dev.satyrn.xpeconomy.api.economy.Account;
 import dev.satyrn.xpeconomy.api.economy.AccountManager;
 import dev.satyrn.xpeconomy.configuration.Configuration;
-import dev.satyrn.xpeconomy.lang.I18n;
 import dev.satyrn.xpeconomy.utils.Commands;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.OfflinePlayer;
@@ -28,17 +28,14 @@ import java.util.Optional;
  */
 public final class AddCommandHandler extends AccountCommandHandler {
     /**
-     * Initializes a new command handler with the permissions manager instance.
+     * Initializes a new command handler with the permission manager instance.
      *
-     * @param plugin The plugin instance.
-     * @param permission The permission manager instance.
+     * @param plugin         The plugin instance.
+     * @param permission     The permission manager instance.
      * @param accountManager The account manager instance.
-     * @param configuration The plugin configuration instance.
+     * @param configuration  The plugin configuration instance.
      */
-    public AddCommandHandler(final @NotNull Plugin plugin,
-                             final @NotNull Permission permission,
-                             final @NotNull AccountManager accountManager,
-                             final @NotNull Configuration configuration) {
+    public AddCommandHandler(final @NotNull Plugin plugin, final @NotNull Permission permission, final @NotNull AccountManager accountManager, final @NotNull Configuration configuration) {
         super(plugin, permission, accountManager, configuration);
     }
 
@@ -62,8 +59,7 @@ public final class AddCommandHandler extends AccountCommandHandler {
 
         final Permission permission = this.getPermission();
 
-        if (sender instanceof final Player player
-                && !permission.has(player, "xpeconomy.balance.add")) {
+        if (sender instanceof final Player player && !permission.has(player, "xpeconomy.balance.add")) {
             sender.sendMessage(I18n.tr("command.balance.add.permission"));
             return true;
         }
@@ -87,7 +83,7 @@ public final class AddCommandHandler extends AccountCommandHandler {
             return true;
         }
 
-        final OfflinePlayer target;
+        final @NotNull OfflinePlayer target;
 
         if (args.length < playerArgIndex + 1) {
             if (sender instanceof Player player) {
@@ -105,15 +101,13 @@ public final class AddCommandHandler extends AccountCommandHandler {
             }
             target = result.get();
 
-            if (sender instanceof final Player player
-                    && player.getUniqueId() != target.getUniqueId()) {
+            if (sender instanceof final Player player && player.getUniqueId() != target.getUniqueId()) {
                 if (!permission.has(player, "xpeconomy.balance.add.others")) {
                     sender.sendMessage(I18n.tr("command.balance.add.permission.others"));
                     return true;
                 }
-                if (permission.has(target.getPlayer(), "xpeconomy.balance.add.exempt")
-                        && !permission.has(player, "xpeconomy.balance.add.exempt.bypass")) {
-                    sender.sendMessage(I18n.tr("command.balance.add.permission.exempt", target.getName()));
+                if (permission.has(target.getPlayer(), "xpeconomy.balance.add.exempt") && !permission.has(player, "xpeconomy.balance.add.exempt.bypass")) {
+                    sender.sendMessage(I18n.tr("command.balance.add.permission.exempt", target.getName() == null ? target.getUniqueId() : target.getName()));
                     return true;
                 }
             }
@@ -121,11 +115,10 @@ public final class AddCommandHandler extends AccountCommandHandler {
 
         final Account account = this.getAccountManager().getAccount(target.getUniqueId());
         if (account == null) {
-            if (sender instanceof final Player player
-                    && player.getUniqueId() == target.getUniqueId()) {
+            if (sender instanceof final Player player && player.getUniqueId() == target.getUniqueId()) {
                 sender.sendMessage(I18n.tr("command.generic.invalidSender.noAccount"));
             } else {
-                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName()));
+                sender.sendMessage(I18n.tr("command.generic.invalidTarget.noAccount", target.getName() == null ? target.getUniqueId() : target.getName()));
             }
             return true;
         }
@@ -135,16 +128,13 @@ public final class AddCommandHandler extends AccountCommandHandler {
             return true;
         }
 
-        if ((sender instanceof final Player player)
-                && player.getUniqueId() == target.getUniqueId()) {
-            sender.sendMessage(I18n.tr("command.balance.add.result",
-                    this.getEconomyMethod().toString(amount, true),
-                    this.getEconomyMethod().toString(account.getBalance(), true)));
+        if ((sender instanceof final Player player) && player.getUniqueId() == target.getUniqueId()) {
+            sender.sendMessage(I18n.tr("command.balance.add.result", this.getEconomyMethod()
+                    .toString(amount, true), this.getEconomyMethod().toString(account.getBalance(), true)));
         } else {
-            sender.sendMessage(I18n.tr("command.balance.add.result.others",
-                    this.getEconomyMethod().toString(amount, true),
-                    target.getName(),
-                    this.getEconomyMethod().toString(account.getBalance(), true)));
+            sender.sendMessage(I18n.tr("command.balance.add.result.others", this.getEconomyMethod()
+                    .toString(amount, true), target.getName() == null ? target.getUniqueId() : target.getName(), this.getEconomyMethod()
+                    .toString(account.getBalance(), true)));
         }
 
         return true;
@@ -154,7 +144,7 @@ public final class AddCommandHandler extends AccountCommandHandler {
      * Requests a list of possible completions for a command argument.
      *
      * @param sender  Source of the command.  For players tab-completing a
-     *                command inside of a command block, this will be the player, not
+     *                command inside a command block, this will be the player, not
      *                the command block.
      * @param command Command which was executed
      * @param alias   The alias used
@@ -188,7 +178,7 @@ public final class AddCommandHandler extends AccountCommandHandler {
     /**
      * Gets the command usage.
      *
-     * @param sender The command sender.
+     * @param sender  The command sender.
      * @param command The command.
      * @return The command usage.
      */
