@@ -27,7 +27,7 @@ Tired of currencies that you have to use commands to check? Want your players to
 - Requires [Vault](https://dev.bukkit.org/projects/vault)
 
 ### Metrics
-This plugin uses bStats to collect some analytics about your current system setup and plugin configuration. Metrics collection is optional. If you installed a previous version of the plugin, you are already opted-out of metrics collection. If you want to opt-out on version 1.3.0 or higher, set the "metrics" option in the configuration file to "false", or comment or remove the line. Thanks!
+This plugin uses bStats to collect some analytics about your current system setup and plugin configuration. Metrics collection is optional. If you installed a previous version of the plugin, you are already opted-out of metrics collection. If you want to opt-out on version 1.1.0 or higher, set the "metrics" option in the configuration file to "false", or comment or remove the line. Thanks!
 
 ## Configuration
 
@@ -133,7 +133,7 @@ debug: false
 - `xpeconomy.experience.*`
   - Grants a user all experience subpermissions
   - Default: false
- 
+
 ### Individual Permissions
 
 - `xpeconomy.balance`
@@ -171,7 +171,7 @@ debug: false
   - Default: false
 - `xpeconomy.balance.deduct.others`
   - Allows a user to remove an amount from another user's account
-  - Default: op 
+  - Default: op
 - `xpeconomy.balance.set`
   - Allows a user to set an account's balance
   - Default: op
@@ -179,7 +179,7 @@ debug: false
   - Exempts a user from the set balance command
   - Default: false
 - `xpeconomy.balance.set.exempt.bypass`
-  - Allows a user to bypass another user's exempt status for the set balance command    
+  - Allows a user to bypass another user's exempt status for the set balance command
   - Default: false
 - `xpeconomy.balance.set.others`
   - Allows a user to set another user's account balance
