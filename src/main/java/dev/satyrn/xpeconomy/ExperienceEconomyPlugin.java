@@ -264,7 +264,7 @@ public final class ExperienceEconomyPlugin extends JavaPlugin {
         accountManager.load();
 
         final ExperienceEconomy economy = new ExperienceEconomy(this, accountManager, configuration);
-        this.getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.High);
+        this.getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.Highest);
 
         return accountManager;
     }

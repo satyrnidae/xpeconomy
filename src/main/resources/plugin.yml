@@ -3,230 +3,230 @@ version: ${project.version}
 main: dev.satyrn.xpeconomy.ExperienceEconomyPlugin
 api-version: 1.18
 prefix: Experience Economy
-depend: [ Vault ]
-loadBefore: [ Essentials ]
-authors: [ satyrnidae ]
+depend: [Vault]
+load: STARTUP
+authors: [satyrnidae]
 description: No more fiat currencies! Tie your economy directly to your XP levels!
 website: https://satyrn.dev/
 commands:
-  add:
-    description: Adds an amount to a player's balance
-    usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
-    aliases:
-      - addbalance
-      - addbal
-  balance:
-    description: Displays a user's account balance
-    usage: /<command> [§d§oPLAYER§r]
-    aliases:
-      - bal
-  deduct:
-    description: Deducts a given amount from a player's balance
-    usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
-    aliases:
-      - remove
-      - removebal
-      - removebalance
-      - deductbal
-      - deductbalance
-  experience:
-    description: Queries a player's experience balance
-    usage: /<command> [§d§oPLAYER§r]
-    aliases:
-      - exp
-      - xp
-  pay:
-    description: Pays another player an amount from the sender's balance. Cannot be executed via console
-    usage: /<command> §d§oPLAYER§r §d§oAMOUNT§r
-  setbalance:
-    description: Sets a player's account balance to a desired value.
-    usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
-    aliases:
-      - setbal
-  syncxp:
-    description: Synchronizes a player's account balance with their XP level
-    usage: /<command> [§d§oPLAYER§r]
-  transfer:
-    description: Transfers balances from one player to another.
-    usage: /<command> §d§oAMOUNT PLAYER RECIPIENT§r
-    aliases:
-      - xfer
-  xpeconomy:
-    description: Performs various tasks for the xpeconomy plugin
-    usage: /<command> {about|add|balance|experience|help|pay|remove|set|sync|transfer|withdraw} [§d§oARGS§r...]
-    aliases:
-      - xpe
-      - xpeco
+    add:
+        description: Adds an amount to a player's balance
+        usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
+        aliases:
+            - addbalance
+            - addbal
+    balance:
+        description: Displays a user's account balance
+        usage: /<command> [§d§oPLAYER§r]
+        aliases:
+            - bal
+    deduct:
+        description: Deducts a given amount from a player's balance
+        usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
+        aliases:
+            - remove
+            - removebal
+            - removebalance
+            - deductbal
+            - deductbalance
+    experience:
+        description: Queries a player's experience balance
+        usage: /<command> [§d§oPLAYER§r]
+        aliases:
+            - exp
+            - xp
+    pay:
+        description: Pays another player an amount from the sender's balance. Cannot be executed via console
+        usage: /<command> §d§oPLAYER§r §d§oAMOUNT§r
+    setbalance:
+        description: Sets a player's account balance to a desired value.
+        usage: /<command> §d§oAMOUNT§r [§d§oPLAYER§r]
+        aliases:
+            - setbal
+    syncxp:
+        description: Synchronizes a player's account balance with their XP level
+        usage: /<command> [§d§oPLAYER§r]
+    transfer:
+        description: Transfers balances from one player to another.
+        usage: /<command> §d§oAMOUNT PLAYER RECIPIENT§r
+        aliases:
+            - xfer
+    xpeconomy:
+        description: Performs various tasks for the xpeconomy plugin
+        usage: /<command> {about|add|balance|experience|help|pay|remove|set|sync|transfer|withdraw} [§d§oARGS§r...]
+        aliases:
+            - xpe
+            - xpeco
 permissions:
-  xpeconomy.*:
-    default: false
-    description: Grants a user all xpeconomy permissions
-    children:
-      xpeconomy.balance.*: true
-      xpeconomy.experience.*: true
-      xpeconomy.pay: true
-      xpeconomy.reload: true
-  xpeconomy.balance:
-    default: true
-    description: Allows a user to query account balances
-  xpeconomy.balance.*:
-    default: false
-    description: Grants a user all balance subpermissions
-    children:
-      xpeconomy.balance: true
-      xpeconomy.balance.add.*: true
-      xpeconomy.balance.exempt: true
-      xpeconomy.balance.exempt.bypass: true
-      xpeconomy.balance.others: true
-      xpeconomy.balance.remove.*: true
-      xpeconomy.balance.set.*: true
-      xpeconomy.balance.sync.*: true
-      xpeconomy.balance.transfer.*: true
-  xpeconomy.balance.add:
-    default: op
-    description: Allows a user to add am amount to an account's balance
-  xpeconomy.balance.add.*:
-    default: false
-    description: Grants a user all add balance subpermissions
-    children:
-      xpeconomy.balance.add: true
-      xpeconomy.balance.add.exempt: true
-      xpeconomy.balance.add.exempt.bypass: true
-      xpeconomy.balance.add.others: true
-  xpeconomy.balance.add.exempt:
-    default: false
-    description: Prevents a user's account balance from being modified by the add command
-  xpeconomy.balance.add.exempt.bypass:
-    default: false
-    description: Allows a user to bypass another user's exempt status for the add command
-  xpeconomy.balance.add.others:
-    default: op
-    description: Allows a user to add a specific balance to another user's account
-  xpeconomy.balance.exempt:
-    default: false
-    description: Prevents a user's account balance from being queried
-  xpeconomy.balance.exempt.bypass:
-    default: false
-    description: Allows a user to bypass another user's exempt status for the balance command
-  xpeconomy.balance.others:
-    default: op
-    description: Allows a user to check another user's account balance
-  xpeconomy.balance.deduct:
-    default: op
-    description: Allows a player to remove an amount from an account
-  xpeconomy.balance.deduct.*:
-    default: false
-    description: Grants a user all removal permissions
-    children:
-      xpeconomy.balance.deduct: true
-      xpeconomy.balance.deduct.exempt: true
-      xpeconomy.balance.deduct.exempt.bypass: true
-      xpeconomy.balance.deduct.others: true
-  xpeconomy.balance.deduct.exempt:
-    default: false
-    description: Prevents a user's account from being altered by the remove command
-  xpeconomy.balance.deduct.exempt.bypass:
-    default: false
-    description: Allows a user to bypass another user's exemption status for the remove command
-  xpeconomy.balance.deduct.others:
-    default: op
-    description: Allows a user to remove an amount from another user's account
-  xpeconomy.balance.set:
-    default: op
-    description: Allows a user to set an account's balance
-  xpeconomy.balance.set.*:
-    default: false
-    description: Grants all set balance permissions
-    children:
-      xpeconomy.balance.set: true
-      xpeconomy.balance.set.exempt: true
-      xpeconomy.balance.set.exempt.bypass: true
-      xpeconomy.balance.set.others: true
-  xpeconomy.balance.set.exempt:
-    default: false
-    description: Exempts a user from the set balance command
-  xpeconomy.balance.set.exempt.bypass:
-    default: false
-    description: Allows a user to bypass another user's exempt status for the set balance command
-  xpeconomy.balance.set.others:
-    default: op
-    description: Allows a user to set another user's account balance
-  xpeconomy.balance.sync:
-    default: op
-    description: Allows a user to sync an account's balance with the player's XP score
-  xpeconomy.balance.sync.*:
-    default: op
-    description: Grants a user all sync permissions
-    children:
-      xpeconomy.balance.sync: true
-      xpeconomy.balance.sync.others: true
-  xpeconomy.balance.sync.others:
-    default: op
-    description: Allows a user to sync another user's balance
-  xpeconomy.balance.transfer:
-    default: op
-    description: Allows a user to force a transfer between two accounts
-  xpeconomy.balance.transfer.*:
-    default: false
-    description: Grants a user all transfer permissions
-    children:
-      xpeconomy.balance.transfer: true
-      xpeconomy.balance.transfer.exempt: true
-      xpeconomy.balance.transfer.exempt.bypass: true
-  xpeconomy.balance.transfer.exempt:
-    default: false
-    description: Prevents a user's account from being transferred from
-  xpeconomy.balance.transfer.exempt.bypass:
-    default: false
-    description: Allows a user to transfer money from exempt accounts
-  xpeconomy.exempt.all:
-    default: false
-    description: Exempts a user from all commands which alter or query another user's account
-    children:
-      xpeconomy.balance.add.exempt: true
-      xpeconomy.balance.exempt: true
-      xpeconomy.balance.remove.exempt: true
-      xpeconomy.experience.exempt: true
-  xpeconomy.exempt.bypass.all:
-    default: false
-    description: Allows a user to bypass all exemptions
-    children:
-      xpeconomy.balance.add.exempt.bypass: true
-      xpeconomy.balance.exempt.bypass: true
-      xpeconomy.balance.remove.exempt.bypass: true
-      xpeconomy.experience.exempt.bypass: true
-  xpeconomy.experience:
-    default: true
-    description: Allows a user to query experience point counts
-  xpeconomy.experience.*:
-    default: false
-    description: Grants a user all experience subpermissions
-    children:
-      xpeconomy.experience: true
-      xpeconomy.experience.exempt: true
-      xpeconomy.experience.exempt.bypass: true
-      xpeconomy.experience.others: true
-  xpeconomy.experience.exempt:
-    default: false
-    description: Prevents a user's experience points from being queried by the experience command
-  xpeconomy.experience.exempt.bypass:
-    default: false
-    description: Allows a user to bypass another user's exempt status when
-  xpeconomy.experience.others:
-    default: op
-    description: Allows a user to query other users' experience
-  xpeconomy.pay:
-    default: true
-    description: Allows a user to pay other users
-  xpeconomy.reload:
-     default: op
-     description: Allows a user to reload the plugin's configuration file.
-  xpeconomy.bottle.fill:
-    default: true
-    description: Allows a user to fill glass bottles with experience
-  xpeconomy.bottle.use:
-    default: true
-    description: Allows a user to use a Bottle o' Enchanting without throwing it
-  xpeconomy.bottle.refund:
-    default: true
-    description: Allows a user to collect glass bottles from thrown Bottles o' Enchanting
+    xpeconomy.*:
+        default: false
+        description: Grants a user all xpeconomy permissions
+        children:
+            xpeconomy.balance.*: true
+            xpeconomy.experience.*: true
+            xpeconomy.pay: true
+            xpeconomy.reload: true
+    xpeconomy.balance:
+        default: true
+        description: Allows a user to query account balances
+    xpeconomy.balance.*:
+        default: false
+        description: Grants a user all balance subpermissions
+        children:
+            xpeconomy.balance: true
+            xpeconomy.balance.add.*: true
+            xpeconomy.balance.exempt: true
+            xpeconomy.balance.exempt.bypass: true
+            xpeconomy.balance.others: true
+            xpeconomy.balance.remove.*: true
+            xpeconomy.balance.set.*: true
+            xpeconomy.balance.sync.*: true
+            xpeconomy.balance.transfer.*: true
+    xpeconomy.balance.add:
+        default: op
+        description: Allows a user to add am amount to an account's balance
+    xpeconomy.balance.add.*:
+        default: false
+        description: Grants a user all add balance subpermissions
+        children:
+            xpeconomy.balance.add: true
+            xpeconomy.balance.add.exempt: true
+            xpeconomy.balance.add.exempt.bypass: true
+            xpeconomy.balance.add.others: true
+    xpeconomy.balance.add.exempt:
+        default: false
+        description: Prevents a user's account balance from being modified by the add command
+    xpeconomy.balance.add.exempt.bypass:
+        default: false
+        description: Allows a user to bypass another user's exempt status for the add command
+    xpeconomy.balance.add.others:
+        default: op
+        description: Allows a user to add a specific balance to another user's account
+    xpeconomy.balance.exempt:
+        default: false
+        description: Prevents a user's account balance from being queried
+    xpeconomy.balance.exempt.bypass:
+        default: false
+        description: Allows a user to bypass another user's exempt status for the balance command
+    xpeconomy.balance.others:
+        default: op
+        description: Allows a user to check another user's account balance
+    xpeconomy.balance.deduct:
+        default: op
+        description: Allows a player to remove an amount from an account
+    xpeconomy.balance.deduct.*:
+        default: false
+        description: Grants a user all removal permissions
+        children:
+            xpeconomy.balance.deduct: true
+            xpeconomy.balance.deduct.exempt: true
+            xpeconomy.balance.deduct.exempt.bypass: true
+            xpeconomy.balance.deduct.others: true
+    xpeconomy.balance.deduct.exempt:
+        default: false
+        description: Prevents a user's account from being altered by the remove command
+    xpeconomy.balance.deduct.exempt.bypass:
+        default: false
+        description: Allows a user to bypass another user's exemption status for the remove command
+    xpeconomy.balance.deduct.others:
+        default: op
+        description: Allows a user to remove an amount from another user's account
+    xpeconomy.balance.set:
+        default: op
+        description: Allows a user to set an account's balance
+    xpeconomy.balance.set.*:
+        default: false
+        description: Grants all set balance permissions
+        children:
+            xpeconomy.balance.set: true
+            xpeconomy.balance.set.exempt: true
+            xpeconomy.balance.set.exempt.bypass: true
+            xpeconomy.balance.set.others: true
+    xpeconomy.balance.set.exempt:
+        default: false
+        description: Exempts a user from the set balance command
+    xpeconomy.balance.set.exempt.bypass:
+        default: false
+        description: Allows a user to bypass another user's exempt status for the set balance command
+    xpeconomy.balance.set.others:
+        default: op
+        description: Allows a user to set another user's account balance
+    xpeconomy.balance.sync:
+        default: op
+        description: Allows a user to sync an account's balance with the player's XP score
+    xpeconomy.balance.sync.*:
+        default: op
+        description: Grants a user all sync permissions
+        children:
+            xpeconomy.balance.sync: true
+            xpeconomy.balance.sync.others: true
+    xpeconomy.balance.sync.others:
+        default: op
+        description: Allows a user to sync another user's balance
+    xpeconomy.balance.transfer:
+        default: op
+        description: Allows a user to force a transfer between two accounts
+    xpeconomy.balance.transfer.*:
+        default: false
+        description: Grants a user all transfer permissions
+        children:
+            xpeconomy.balance.transfer: true
+            xpeconomy.balance.transfer.exempt: true
+            xpeconomy.balance.transfer.exempt.bypass: true
+    xpeconomy.balance.transfer.exempt:
+        default: false
+        description: Prevents a user's account from being transferred from
+    xpeconomy.balance.transfer.exempt.bypass:
+        default: false
+        description: Allows a user to transfer money from exempt accounts
+    xpeconomy.exempt.all:
+        default: false
+        description: Exempts a user from all commands which alter or query another user's account
+        children:
+            xpeconomy.balance.add.exempt: true
+            xpeconomy.balance.exempt: true
+            xpeconomy.balance.remove.exempt: true
+            xpeconomy.experience.exempt: true
+    xpeconomy.exempt.bypass.all:
+        default: false
+        description: Allows a user to bypass all exemptions
+        children:
+            xpeconomy.balance.add.exempt.bypass: true
+            xpeconomy.balance.exempt.bypass: true
+            xpeconomy.balance.remove.exempt.bypass: true
+            xpeconomy.experience.exempt.bypass: true
+    xpeconomy.experience:
+        default: true
+        description: Allows a user to query experience point counts
+    xpeconomy.experience.*:
+        default: false
+        description: Grants a user all experience subpermissions
+        children:
+            xpeconomy.experience: true
+            xpeconomy.experience.exempt: true
+            xpeconomy.experience.exempt.bypass: true
+            xpeconomy.experience.others: true
+    xpeconomy.experience.exempt:
+        default: false
+        description: Prevents a user's experience points from being queried by the experience command
+    xpeconomy.experience.exempt.bypass:
+        default: false
+        description: Allows a user to bypass another user's exempt status when
+    xpeconomy.experience.others:
+        default: op
+        description: Allows a user to query other users' experience
+    xpeconomy.pay:
+        default: true
+        description: Allows a user to pay other users
+    xpeconomy.reload:
+        default: op
+        description: Allows a user to reload the plugin's configuration file.
+    xpeconomy.bottle.fill:
+        default: true
+        description: Allows a user to fill glass bottles with experience
+    xpeconomy.bottle.use:
+        default: true
+        description: Allows a user to use a Bottle o' Enchanting without throwing it
+    xpeconomy.bottle.refund:
+        default: true
+        description: Allows a user to collect glass bottles from thrown Bottles o' Enchanting
