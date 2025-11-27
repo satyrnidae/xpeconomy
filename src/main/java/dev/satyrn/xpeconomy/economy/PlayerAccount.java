@@ -202,7 +202,7 @@ public final class PlayerAccount implements Account {
      * @param updateXPValue If true, also updates the player's XP value to match.
      */
     private void addBalance(@NotNull BigDecimal value, @SuppressWarnings("SameParameterValue") boolean updateXPValue) {
-        final BigInteger addValue = this.getEconomyMethod().toRawBalance(value, BigInteger.ZERO);
+        final BigInteger addValue = this.getEconomyMethod().toRawBalance(value, this.balance);
 
         this.setBalanceRaw(this.balance.add(addValue), updateXPValue);
     }

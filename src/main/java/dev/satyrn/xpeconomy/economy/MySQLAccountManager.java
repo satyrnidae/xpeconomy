@@ -25,6 +25,10 @@ public final class MySQLAccountManager extends PlayerAccountManagerBase {
      * The connection manager.
      */
     private final transient ConnectionManager connectionManager;
+    /**
+     * Whether the MySQL server supports UUID functions (8.0+).
+     */
+    private transient boolean supportsUuidFunctions = false;
 
     /**
      * Creates a new account manager with a MySQL backend.
@@ -58,16 +62,29 @@ public final class MySQLAccountManager extends PlayerAccountManagerBase {
             if (connection == null) {
                 return;
             }
+            this.detectMySQLVersion(connection);
             this.createTable(connection);
 
             final Statement statement = connection.createStatement();
-            final String selectQuery = String.format("SELECT BIN_TO_UUID(uuid) AS uuid, balance, name FROM %s", this.getTableName());
+            final String selectQuery;
+            if (this.supportsUuidFunctions) {
+                selectQuery = String.format("SELECT BIN_TO_UUID(uuid) AS uuid, balance, name FROM %s", this.getTableName());
+            } else {
+                selectQuery = String.format("SELECT uuid, balance, name FROM %s", this.getTableName());
+            }
+
             try (final ResultSet results = statement.executeQuery(selectQuery)) {
                 while (results.next()) {
-                    final String uuid = results.getString("uuid");
+                    final UUID uuid;
+                    if (this.supportsUuidFunctions) {
+                        uuid = UUID.fromString(results.getString("uuid"));
+                    } else {
+                        final byte[] uuidBytes = results.getBytes("uuid");
+                        uuid = bytesToUUID(uuidBytes);
+                    }
                     final BigDecimal balance = results.getBigDecimal("balance");
                     final String name = results.getString("name");
-                    final PlayerAccount account = new PlayerAccount(this.configuration, UUID.fromString(uuid)).setBalanceRaw(balance.setScale(0, RoundingMode.DOWN)
+                    final PlayerAccount account = new PlayerAccount(this.configuration, uuid).setBalanceRaw(balance.setScale(0, RoundingMode.DOWN)
                             .toBigInteger(), false);
                     if (name != null) {
                         account.setName(name);
@@ -91,14 +108,25 @@ public final class MySQLAccountManager extends PlayerAccountManagerBase {
             if (connection == null) {
                 return;
             }
+            this.detectMySQLVersion(connection);
             this.createTable(connection);
 
-            final String insertSQLStatement = String.format("INSERT INTO %s (uuid, balance, name, create_date, update_date) VALUES (UUID_TO_BIN(?), ?, ?, ?, ?) ON DUPLICATE KEY UPDATE balance = ?, name = ?, update_date = ?", this.getTableName());
+            final String insertSQLStatement;
+            if (this.supportsUuidFunctions) {
+                insertSQLStatement = String.format("INSERT INTO %s (uuid, balance, name, create_date, update_date) VALUES (UUID_TO_BIN(?), ?, ?, ?, ?) ON DUPLICATE KEY UPDATE balance = ?, name = ?, update_date = ?", this.getTableName());
+            } else {
+                insertSQLStatement = String.format("INSERT INTO %s (uuid, balance, name, create_date, update_date) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE balance = ?, name = ?, update_date = ?", this.getTableName());
+            }
+
             try (final PreparedStatement statement = connection.prepareStatement(insertSQLStatement)) {
                 int i = 0;
                 for (final PlayerAccount account : this.accounts) {
                     final Date currentTime = Calendar.getInstance().getTime();
-                    statement.setString(1, account.getUUID().toString());
+                    if (this.supportsUuidFunctions) {
+                        statement.setString(1, account.getUUID().toString());
+                    } else {
+                        statement.setBytes(1, uuidToBytes(account.getUUID()));
+                    }
                     statement.setBigDecimal(2, new BigDecimal(account.getBalanceRaw()));
                     statement.setString(3, account.getName());
                     statement.setTimestamp(4, new Timestamp(currentTime.getTime()));
@@ -174,6 +202,25 @@ public final class MySQLAccountManager extends PlayerAccountManagerBase {
     }
 
     /**
+     * Detects the MySQL version and sets the supportsUuidFunctions flag.
+     *
+     * @param connection The database connection.
+     */
+    private void detectMySQLVersion(final @NotNull Connection connection) {
+        try {
+            final DatabaseMetaData metaData = connection.getMetaData();
+            final int majorVersion = metaData.getDatabaseMajorVersion();
+            this.supportsUuidFunctions = majorVersion >= 8;
+            this.plugin.getLogger().log(Level.FINE, String.format("[Storage] Detected MySQL version %d.%d. UUID functions %s.",
+                    majorVersion, metaData.getDatabaseMinorVersion(),
+                    this.supportsUuidFunctions ? "supported" : "not supported (using polyfill)"));
+        } catch (final SQLException ex) {
+            this.plugin.getLogger().log(Level.WARNING, "[Storage] Failed to detect MySQL version. Defaulting to polyfill UUID functions.", ex);
+            this.supportsUuidFunctions = false;
+        }
+    }
+
+    /**
      * Gets the name of the table.
      *
      * @return The name of the table.
@@ -185,5 +232,38 @@ public final class MySQLAccountManager extends PlayerAccountManagerBase {
         }
 
         return tableNameBuilder.toString();
+    }
+
+    /**
+     * Converts a UUID to a byte array for storage in MySQL.
+     *
+     * @param uuid The UUID to convert.
+     * @return The byte array representation.
+     */
+    private static byte[] uuidToBytes(final UUID uuid) {
+        final byte[] bytes = new byte[16];
+        final long mostSigBits = uuid.getMostSignificantBits();
+        final long leastSigBits = uuid.getLeastSignificantBits();
+        for (int i = 0; i < 8; i++) {
+            bytes[i] = (byte) (mostSigBits >>> (8 * (7 - i)));
+            bytes[8 + i] = (byte) (leastSigBits >>> (8 * (7 - i)));
+        }
+        return bytes;
+    }
+
+    /**
+     * Converts a byte array from MySQL to a UUID.
+     *
+     * @param bytes The byte array to convert.
+     * @return The UUID.
+     */
+    private static UUID bytesToUUID(final byte[] bytes) {
+        long mostSigBits = 0;
+        long leastSigBits = 0;
+        for (int i = 0; i < 8; i++) {
+            mostSigBits = (mostSigBits << 8) | (bytes[i] & 0xff);
+            leastSigBits = (leastSigBits << 8) | (bytes[8 + i] & 0xff);
+        }
+        return new UUID(mostSigBits, leastSigBits);
     }
 }

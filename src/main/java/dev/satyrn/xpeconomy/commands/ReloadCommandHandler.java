@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Models a command which allows a user to trigger a configuration reload.

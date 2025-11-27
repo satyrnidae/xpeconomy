@@ -178,10 +178,10 @@ public enum EconomyMethod {
     public @NotNull BigInteger toRawBalance(final BigDecimal balance, final BigInteger rawBalance) {
         switch (this) {
             case LEVELS -> {
-                final Pair<BigInteger, BigDecimal> levelProgress = PlayerXPUtils.toLevelProgress(rawBalance);
-                final BigInteger totalXPForCurrentLevel = PlayerXPUtils.getCurrentLevelProgress(levelProgress.getValue0(), levelProgress.getValue1());
-                final int newLevel = balance.setScale(0, RoundingMode.DOWN).intValue();
-                return PlayerXPUtils.getXPForLevel(BigInteger.valueOf(newLevel)).add(totalXPForCurrentLevel);
+                final int currentLevel = PlayerXPUtils.toLevelProgress(rawBalance).getValue0().intValue();
+                final int targetLevel = currentLevel + balance.setScale(0, RoundingMode.DOWN).intValue();
+                final BigInteger targetXP = PlayerXPUtils.getXPForLevel(BigInteger.valueOf(targetLevel));
+                return targetXP.subtract(rawBalance);
             }
             case PER_HUNDRED -> {
                 return balance.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.DOWN).toBigInteger();
